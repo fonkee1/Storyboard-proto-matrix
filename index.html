@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CES 2026 Holo-Deck</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700;800&family=Rajdhani:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"JetBrains Mono"', 'monospace'],
+              display: ['"Rajdhani"', 'sans-serif'],
+            },
+            colors: {
+              cyber: {
+                black: '#020402',
+                dark: '#050a05',
+                dim: '#0a140a',
+                green: '#00ff41',
+                bright: '#ccffcc',
+                alert: '#ff003c',
+              }
+            },
+            animation: {
+              'scanlines': 'scanlines 4s linear infinite',
+              'marquee': 'marquee 30s linear infinite',
+              'glitch-1': 'glitch-1 2s infinite linear alternate-reverse',
+              'glitch-2': 'glitch-2 3s infinite linear alternate-reverse',
+              'pulse-fast': 'pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'holo-pulse': 'holo-pulse 5s ease-in-out infinite',
+              'text-glitch': 'text-glitch 3s infinite linear alternate-reverse',
+            },
+            keyframes: {
+              scanlines: {
+                '0%': { backgroundPosition: '0 0, 0 0' },
+                '100%': { backgroundPosition: '0 0, 0 100%' },
+              },
+              marquee: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              },
+              'glitch-1': {
+                '0%': { clipPath: 'inset(20% 0 80% 0)', transform: 'translate(-2px, 2px)' },
+                '20%': { clipPath: 'inset(60% 0 10% 0)', transform: 'translate(2px, -1px)' },
+                '40%': { clipPath: 'inset(40% 0 50% 0)', transform: 'translate(-2px, 2px)' },
+                '60%': { clipPath: 'inset(80% 0 5% 0)', transform: 'translate(2px, -2px)' },
+                '80%': { clipPath: 'inset(10% 0 70% 0)', transform: 'translate(-1px, 1px)' },
+                '100%': { clipPath: 'inset(30% 0 20% 0)', transform: 'translate(2px, -2px)' },
+              },
+              'glitch-2': {
+                '0%': { clipPath: 'inset(10% 0 60% 0)', transform: 'translate(2px, -2px)' },
+                '20%': { clipPath: 'inset(30% 0 20% 0)', transform: 'translate(-2px, 1px)' },
+                '40%': { clipPath: 'inset(70% 0 10% 0)', transform: 'translate(2px, -2px)' },
+                '60%': { clipPath: 'inset(20% 0 50% 0)', transform: 'translate(-2px, 2px)' },
+                '80%': { clipPath: 'inset(50% 0 30% 0)', transform: 'translate(1px, -1px)' },
+                '100%': { clipPath: 'inset(0% 0 80% 0)', transform: 'translate(-2px, 2px)' },
+              },
+              'holo-pulse': {
+                '0%, 100%': { 
+                  boxShadow: 'inset 0 0 50px rgba(0, 255, 65, 0.1)',
+                  opacity: '0.8'
+                },
+                '50%': { 
+                  boxShadow: 'inset 0 0 120px rgba(0, 255, 65, 0.4)',
+                  opacity: '1'
+                },
+              },
+              'text-glitch': {
+                '0%': { opacity: '1', textShadow: '0 0 0 transparent' },
+                '92%': { opacity: '1', textShadow: '0 0 0 transparent' },
+                '93%': { opacity: '0.8', textShadow: '2px 0 #00ff41, -2px 0 #ff003c' },
+                '94%': { opacity: '1', textShadow: '0 0 0 transparent' },
+                '96%': { opacity: '0.5', transform: 'translateX(2px)' },
+                '98%': { opacity: '1', transform: 'translateX(0)' },
+                '100%': { opacity: '1', textShadow: '0 0 0 transparent' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #000;
+        color: #00ff41;
+        overflow: hidden;
+      }
+      /* Custom Scrollbar for Terminal */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #050a05; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #00ff41; 
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #ccffcc; 
+      }
+      
+      /* Mask for marquee fade */
+      .mask-gradient {
+        mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+      }
+
+      /* 3D Transform Utilities */
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .preserve-3d {
+        transform-style: preserve-3d;
+      }
+      .translate-z-0 { transform: translateZ(0px); }
+      .translate-z-4 { transform: translateZ(10px); }
+      .translate-z-10 { transform: translateZ(30px); }
+      .translate-z-20 { transform: translateZ(60px); }
+      .translate-z-30 { transform: translateZ(100px); }
+      
+      /* Hover depth effect */
+      .hover-depth:hover {
+        transform: translateZ(20px);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Mock config for development if environment variables aren't injected
+      if (typeof window.__firebase_config === 'undefined') {
+        window.__firebase_config = JSON.stringify({
+            apiKey: "AIzaSyDummyKeyForDevOnly",
+            authDomain: "ces-demo.firebaseapp.com",
+            projectId: "ces-demo",
+            storageBucket: "ces-demo.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        });
+      }
+      if (typeof window.__app_id === 'undefined') {
+        window.__app_id = 'ces-2026-demo';
+      }
+    </script>
+  </body>
+</html>
