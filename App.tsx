@@ -161,7 +161,7 @@ const useCESData = (user: any) => {
   const loadLocalData = () => {
     // In production, load from bundled config file (locked-in URLs)
     if (isProduction()) {
-      console.log('🚀 Production mode: Loading from production-config.json');
+      if (import.meta.env.DEV) console.log('🚀 Production mode: Loading from production-config.json');
       
       // Load media with proper IDs and order
       const prodMedia = productionConfig.media.map((item, index) => ({
@@ -188,7 +188,7 @@ const useCESData = (user: any) => {
     }
     
     // In development, load from localStorage (editable via admin panel)
-    console.log('🔧 Development mode: Loading from localStorage');
+    if (import.meta.env.DEV) console.log('🔧 Development mode: Loading from localStorage');
     const savedMedia = localStorage.getItem(LS_MEDIA_KEY);
     const savedSettings = localStorage.getItem(LS_SETTINGS_KEY);
     if (savedMedia) setMedia(JSON.parse(savedMedia));
@@ -481,7 +481,7 @@ const BackgroundAudio = ({
          audioRef.current.load();
          if (!isMuted) {
             const p = audioRef.current.play();
-            if (p) p.catch(e => console.warn("Autoplay blocked", e));
+            if (p) p.catch(() => {});
          }
        }
 
@@ -499,7 +499,7 @@ const BackgroundAudio = ({
               analyserRef.current.connect(contextRef.current.destination);
               setAnalyser(analyserRef.current);
             } catch (e) {
-              console.log("Audio Graph Error", e);
+              // Audio graph already connected
             }
          }
        }
@@ -512,7 +512,7 @@ const BackgroundAudio = ({
         contextRef.current.resume();
       }
       if (audioRef.current && !isMuted && audioRef.current.paused) {
-        audioRef.current.play().catch((e) => console.warn("Auto-play blocked:", e));
+        audioRef.current.play().catch(() => {});
       }
     };
     
@@ -521,7 +521,7 @@ const BackgroundAudio = ({
 
     if (!isMuted && audioRef.current) {
       if (contextRef.current?.state === 'suspended') contextRef.current.resume();
-      audioRef.current.play().catch(e => console.log("Audio Play Blocked", e));
+      audioRef.current.play().catch(() => {});
     } else if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -1121,8 +1121,7 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
     // Try to play (autoPlay might be blocked)
     const playPromise = video.play();
     if (playPromise !== undefined) {
-      playPromise.catch((e) => {
-        console.log("Video autoplay blocked, will play on user interaction");
+      playPromise.catch(() => {
         // Video will start on first click/touch
       });
     }
