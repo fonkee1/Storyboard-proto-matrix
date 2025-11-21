@@ -45,7 +45,8 @@ import {
   Film,
   FileAudio,
   Repeat,
-  Shuffle
+  Shuffle,
+  TouchpadOff
 } from 'lucide-react';
 
 // --- TYPE DECLARATIONS ---
@@ -849,6 +850,12 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const currentItem = useMemo(() => media[currentIndex], [media, currentIndex]);
+  
+  // Preload next item
+  const nextItem = useMemo(() => {
+      if (media.length <= 1) return null;
+      return media[(currentIndex + 1) % media.length];
+  }, [media, currentIndex]);
 
   const triggerNext = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -954,6 +961,13 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
   return (
     <div className={`absolute inset-0 flex items-center justify-center z-10 bg-black transition-opacity duration-100 ${isFlickering ? 'opacity-0 scale-95 filter blur-sm' : 'opacity-100 scale-100 filter blur-0'}`}>
       
+      {/* Invisible Preloader for Next Item */}
+      <div className="hidden">
+          {nextItem && (nextItem.type === 'image' || nextItem.type === 'gif') && (
+              <img src={nextItem.url} alt="preload" />
+          )}
+      </div>
+
       {hasError ? (
         <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
           {/* Fallback Background */}
@@ -1225,27 +1239,33 @@ const AdminDashboard = ({ media, settings, user, onExit, actions }: {
             </form>
 
             {/* Terminal List */}
-            <div className="space-y-1 font-mono text-xs">
-              <div className="flex text-green-900 border-b border-green-900/50 pb-2 px-2">
+            <div className="space-y-2 font-mono text-xs">
+              <div className="flex text-green-900 border-b border-green-900/50 pb-2 px-3 uppercase tracking-wider font-bold">
                 <span className="w-12">IDX</span>
                 <span className="flex-1">RESOURCE_IDENTIFIER</span>
                 <span className="w-24">TYPE</span>
-                <span className="w-24 text-right">ACTIONS</span>
+                <span className="w-28 text-right">ACTIONS</span>
               </div>
               {media.map((item, idx) => (
-                <div key={item.id} className="flex items-center hover:bg-green-900/10 p-2 group transition-colors">
-                  <span className="w-12 text-green-700">[{String(idx).padStart(2, '0')}]</span>
-                  <span className="flex-1 truncate pr-4 text-green-400 group-hover:text-green-200">{item.url}</span>
-                  <span className="w-24 text-green-700 uppercase">{item.type} {(item.type === 'image' || item.type === 'gif') && `(${item.duration}s)`}</span>
-                  <div className="w-24 flex justify-end gap-2 opacity-50 group-hover:opacity-100">
-                    <button onClick={() => actions.reorderMedia(idx, 'up')} className="hover:text-white"><MoveUp size={14} /></button>
-                    <button onClick={() => actions.reorderMedia(idx, 'down')} className="hover:text-white"><MoveDown size={14} /></button>
-                    <button onClick={() => actions.deleteMedia(item.id)} className="text-red-500 hover:text-red-400 ml-2"><Trash2 size={14} /></button>
+                <div key={item.id} className="flex items-center border border-transparent hover:border-green-500/30 hover:bg-green-900/20 p-3 rounded-sm group transition-all duration-200">
+                  <span className="w-12 text-green-700 font-bold group-hover:text-green-500 transition-colors">[{String(idx).padStart(2, '0')}]</span>
+                  <span className="flex-1 truncate pr-4 text-green-400 group-hover:text-green-200 transition-colors font-medium">{item.url}</span>
+                  <span className="w-24 text-green-700 uppercase text-[10px] tracking-wider group-hover:text-green-400 transition-colors">
+                    <span className="bg-green-900/20 px-1 py-0.5 rounded border border-green-900/50 group-hover:border-green-500/50">
+                      {item.type} {(item.type === 'image' || item.type === 'gif') && `(${item.duration}s)`}
+                    </span>
+                  </span>
+                  <div className="w-28 flex justify-end items-center gap-3 opacity-40 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1">
+                        <button onClick={() => actions.reorderMedia(idx, 'up')} className="p-1 hover:bg-green-500 hover:text-black rounded transition-colors" title="Move Up"><MoveUp size={12} /></button>
+                        <button onClick={() => actions.reorderMedia(idx, 'down')} className="p-1 hover:bg-green-500 hover:text-black rounded transition-colors" title="Move Down"><MoveDown size={12} /></button>
+                    </div>
+                    <button onClick={() => actions.deleteMedia(item.id)} className="p-1 text-red-500 hover:bg-red-500 hover:text-black rounded transition-colors ml-2" title="Delete"><Trash2 size={12} /></button>
                   </div>
                 </div>
               ))}
               {media.length === 0 && (
-                  <div className="text-center py-8 text-green-900 italic">
+                  <div className="text-center py-12 text-green-900/50 italic border-2 border-dashed border-green-900/20 rounded-lg">
                       // DATABASE_EMPTY :: AWAITING_INPUT
                   </div>
               )}
@@ -1292,10 +1312,11 @@ const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
 
   useEffect(() => {
     if (phase === 1) {
-      const timer = setTimeout(() => setPhase(2), 2500); // 2.5s
+      // Automatically complete after logo reveal, suppressing the "Access Granted" / Click button page
+      const timer = setTimeout(onComplete, 2500); 
       return () => clearTimeout(timer);
     }
-  }, [phase]);
+  }, [phase, onComplete]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black text-cyber-green font-mono flex flex-col items-center justify-center overflow-hidden">
@@ -1317,22 +1338,6 @@ const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
            </h1>
            <div className="text-center text-cyber-green/80 text-xl tracking-[1em] mt-4 font-mono animate-pulse">
              HOLO-DECK
-           </div>
-        </div>
-      )}
-      {phase === 2 && (
-        <div className="text-center animate-in fade-in zoom-in duration-500">
-           <div className="text-4xl md:text-6xl font-bold text-cyber-green border-2 border-cyber-green px-8 py-4 animate-pulse bg-cyber-green/10 shadow-[0_0_50px_rgba(0,255,65,0.3)]">
-             ACCESS GRANTED
-           </div>
-           <div className="mt-12">
-             <button 
-                onClick={onComplete}
-                className="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-black transition-all duration-300 bg-green-500 rounded hover:bg-white hover:text-green-900 focus:outline-none"
-             >
-                <span className="absolute top-0 left-0 w-full h-full -mt-1 transition-all duration-500 translate-x-0 bg-green-600 group-hover:mt-0 group-hover:h-full opacity-0 group-hover:opacity-100"></span>
-                <span className="relative tracking-widest">CLICK TO ENTER SYSTEM</span>
-             </button>
            </div>
         </div>
       )}
@@ -1404,6 +1409,16 @@ export default function App() {
         >
             {'>'} SYSTEM_LOGIN
         </button>
+      )}
+
+      {/* Mobile Audio Hint Overlay */}
+      {viewMode === 'public' && audioUrls.length > 0 && isMuted && (
+          <div className="fixed inset-0 z-[60] pointer-events-none flex items-center justify-center md:hidden">
+              <div className="bg-black/80 border border-green-500/50 px-6 py-4 text-center animate-pulse backdrop-blur-sm">
+                  <TouchpadOff size={32} className="text-green-500 mx-auto mb-2" />
+                  <p className="text-green-500 text-xs font-bold tracking-widest">TAP TERMINAL TO UNMUTE</p>
+              </div>
+          </div>
       )}
 
       {viewMode === 'public' ? (
