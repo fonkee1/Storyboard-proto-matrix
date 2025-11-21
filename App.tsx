@@ -1035,13 +1035,17 @@ const AdminDashboard = ({
   settings, 
   user, 
   onExit, 
-  actions 
+  actions,
+  skinColor,
+  setSkinColor
 }: { 
   media: MediaItem[], 
   settings: AppSettings, 
   user: any, 
   onExit: () => void, 
-  actions: any 
+  actions: any,
+  skinColor: 'green' | 'pink',
+  setSkinColor: (color: 'green' | 'pink') => void
 }) => {
   const [newUrl, setNewUrl] = useState('');
   const [newType, setNewType] = useState<MediaType>('image');
@@ -1078,18 +1082,26 @@ const AdminDashboard = ({
           </button>
         </div>
 
-        <div className="flex gap-4 mb-6">
-           <button 
-             onClick={() => setActiveTab('media')}
-             className={`px-4 py-2 rounded ${activeTab === 'media' ? 'bg-green-600 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+        <div className="flex gap-4 mb-6 items-center justify-between">
+           <div className="flex gap-4">
+             <button 
+               onClick={() => setActiveTab('media')}
+               className={`px-4 py-2 rounded ${activeTab === 'media' ? 'bg-green-600 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+             >
+               MEDIA PLAYLIST
+             </button>
+             <button 
+               onClick={() => setActiveTab('settings')}
+               className={`px-4 py-2 rounded ${activeTab === 'settings' ? 'bg-green-600 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+             >
+               GLOBAL SETTINGS
+             </button>
+           </div>
+           <button
+             onClick={() => setSkinColor(skinColor === 'green' ? 'pink' : 'green')}
+             className={`px-4 py-2 rounded font-bold transition-all ${skinColor === 'green' ? 'bg-green-600 text-black hover:bg-green-500' : 'bg-pink-600 text-black hover:bg-pink-500'}`}
            >
-             MEDIA PLAYLIST
-           </button>
-           <button 
-             onClick={() => setActiveTab('settings')}
-             className={`px-4 py-2 rounded ${activeTab === 'settings' ? 'bg-green-600 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
-           >
-             GLOBAL SETTINGS
+             🎨 SKIN: {skinColor.toUpperCase()}
            </button>
         </div>
 
@@ -1265,6 +1277,9 @@ export default function App() {
     const saved = localStorage.getItem('ces-2026-skin');
     return (saved as 'green' | 'pink') || 'green';
   });
+  const [passwordPromptOpen, setPasswordPromptOpen] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const ADMIN_PASSWORD = 'b0untyf3ttYO!';
 
   // Apply skin to body element
   useEffect(() => {
@@ -1320,12 +1335,68 @@ export default function App() {
       
       {/* Admin Toggle Button (Hidden in public view unless hovered top right) */}
       {viewMode === 'public' && (
-        <button 
-            onClick={() => setViewMode('admin')}
+        <>
+          <button 
+            onClick={() => setPasswordPromptOpen(true)}
             className="fixed top-4 right-4 z-50 bg-black/30 text-green-500/20 hover:text-green-500 px-3 py-1 font-mono text-[10px] font-bold hover:bg-green-500/10 transition-all tracking-widest uppercase backdrop-blur border border-transparent hover:border-green-500/50"
-        >
-            {'>'} SYSTEM_LOGIN
-        </button>
+          >
+              {'>'} SYSTEM_LOGIN
+          </button>
+          
+          {passwordPromptOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur">
+              <div className="bg-zinc-900 border-2 border-green-500 p-8 rounded-lg max-w-sm w-full">
+                <h2 className="text-green-500 font-bold text-lg mb-4 tracking-widest">SYSTEM_ACCESS_REQUIRED</h2>
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (passwordInput === ADMIN_PASSWORD) {
+                        setViewMode('admin');
+                        setPasswordPromptOpen(false);
+                        setPasswordInput('');
+                      } else {
+                        alert('ACCESS DENIED');
+                        setPasswordInput('');
+                      }
+                    }
+                  }}
+                  placeholder="ENTER PASSWORD"
+                  className="w-full bg-zinc-800 border border-green-500/50 p-3 rounded text-green-500 font-mono placeholder:text-green-900 focus:outline-none focus:border-green-500 mb-4"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (passwordInput === ADMIN_PASSWORD) {
+                        setViewMode('admin');
+                        setPasswordPromptOpen(false);
+                        setPasswordInput('');
+                      } else {
+                        alert('ACCESS DENIED');
+                        setPasswordInput('');
+                      }
+                    }}
+                    className="flex-1 bg-green-600 text-black font-bold py-2 rounded hover:bg-green-500 transition"
+                  >
+                    GRANT ACCESS
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPasswordPromptOpen(false);
+                      setPasswordInput('');
+                    }}
+                    className="flex-1 bg-zinc-700 text-zinc-300 font-bold py-2 rounded hover:bg-zinc-600 transition"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Mobile Audio Hint Overlay */}
