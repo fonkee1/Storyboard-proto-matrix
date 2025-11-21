@@ -949,6 +949,7 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const touchStartX = useRef(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Reset load state when index changes
   useEffect(() => {
@@ -984,18 +985,24 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
   useEffect(() => {
     if (!item) return;
 
+    // Clear any existing timer
+    if (timerRef.current) clearTimeout(timerRef.current);
+
     if (item.type === 'image' || item.type === 'gif') {
-      const timer = setTimeout(() => {
+      const duration = (item.duration || 5) * 1000;
+      timerRef.current = setTimeout(() => {
         onNext();
-      }, (item.duration || 5) * 1000);
-      return () => clearTimeout(timer);
+      }, duration);
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+      };
     } else if (item.type === 'video') {
        if (videoRef.current) {
            videoRef.current.currentTime = 0;
            videoRef.current.play().catch(e => console.warn("Video play failed", e));
        }
     }
-  }, [item, onNext]);
+  }, [item.id, item.type, item.duration, onNext]);
 
   // Preload next item
   useEffect(() => {
