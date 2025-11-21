@@ -620,7 +620,7 @@ const TelemetrySidebar = ({
         {/* Hover Hint Tooltip */}
         <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-green-500 text-black px-3 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-[0_0_20px_rgba(34,197,94,0.6)] z-50">
           <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-500"></div>
-          {hasAudio && !isMuted ? 'Stop continuous audio loop' : 'Play all tracks on repeat'}
+          {hasAudio && !isMuted ? 'STOP AUDIO LOOP' : 'PRESS PLAY'}
         </div>
       </button>
 
