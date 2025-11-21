@@ -940,8 +940,13 @@ const Countdown = () => {
            </div>
         </div>
 
-        {/* CENTER: TIMER + ROBOT HEAD + LOCATION */}
-        <div className="flex gap-6 md:gap-12 items-end">
+        {/* CENTER: TIMER + ROBOT HEADS + LOCATION */}
+        <div className="flex gap-6 md:gap-12 items-end justify-center flex-1">
+            {/* LEFT ROBOT HEAD: Before timer for balance */}
+            <div className="animate-bounce flex flex-col items-center hidden md:flex">
+              <Bot size={96} className="text-green-500 animate-spin-y" />
+            </div>
+            
             {['DAYS', 'HRS', 'MIN', 'SEC'].map((label, i) => {
             const val = Object.values(timeLeft)[i];
             return (
@@ -954,7 +959,7 @@ const Countdown = () => {
             );
             })}
             
-            {/* ROBOT HEAD: Centered between SECONDS and LOCATION */}
+            {/* RIGHT ROBOT HEAD: Centered between SECONDS and LOCATION */}
             <div className="animate-bounce flex flex-col items-center">
               <Bot size={96} className="text-green-500 animate-spin-y" />
             </div>
