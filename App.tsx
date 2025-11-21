@@ -947,14 +947,8 @@ const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
 const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], currentIndex: number, onNext: () => void }) => {
   const item = media[currentIndex];
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
   const touchStartX = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Reset load state when index changes
-  useEffect(() => {
-      setIsLoaded(false);
-  }, [item]);
 
   // Keyboard and swipe navigation
   useEffect(() => {
@@ -982,33 +976,53 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
     };
   }, [onNext]);
 
+  // Media timing logic - only start timer AFTER media is loaded
   useEffect(() => {
     if (!item) return;
 
     // Clear any existing timer
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
 
+    // For videos, reset and play
+    if (item.type === 'video' && videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(e => console.warn("Video play failed", e));
+    }
+
+    // Cleanup on unmount or item change
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [item?.id, item?.type]);
+
+  // Start timer when image/gif loads
+  const handleImageLoad = () => {
+    if (!item || timerRef.current) return;
+    
     if (item.type === 'image' || item.type === 'gif') {
       const duration = (item.duration || 5) * 1000;
       timerRef.current = setTimeout(() => {
         onNext();
       }, duration);
-      return () => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-      };
-    } else if (item.type === 'video') {
-       if (videoRef.current) {
-           videoRef.current.currentTime = 0;
-           videoRef.current.play().catch(e => console.warn("Video play failed", e));
-       }
     }
-  }, [item?.id, item?.type, item?.duration]);
+  };
+
+  // Start timer when video is ready
+  const handleVideoReady = () => {
+    // Video will use onEnded event instead of timer
+  };
 
   // Preload next item
   useEffect(() => {
     if (media.length > 1) {
         const nextItem = media[(currentIndex + 1) % media.length];
-        if (nextItem.type === 'image' || nextItem.type === 'gif') {
+        if (nextItem && (nextItem.type === 'image' || nextItem.type === 'gif')) {
             const img = new Image();
             img.src = nextItem.url;
         }
@@ -1034,9 +1048,9 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
          <img 
             src={item.url} 
             alt="Display" 
-            className={`w-full h-full object-contain transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} 
-            onLoad={() => setIsLoaded(true)}
-            key={item.id} // Force remount for animation
+            className="w-full h-full object-contain"
+            onLoad={handleImageLoad}
+            key={item.id}
          />
        )}
        
@@ -1044,11 +1058,12 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
          <video
             ref={videoRef}
             src={item.url}
-            className={`w-full h-full object-contain transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className="w-full h-full object-contain"
             muted
             playsInline
             onEnded={onNext}
-            onLoadedData={() => setIsLoaded(true)}
+            onLoadedData={handleVideoReady}
+            onCanPlay={handleVideoReady}
             key={item.id}
          />
        )}
