@@ -548,13 +548,19 @@ const TelemetrySidebar = ({
       {/* AUDIO CONTROL BUTTON */}
       <button
         onClick={toggleMute}
-        className="border-l-2 border-green-500/40 pl-2 hover-depth transition-all duration-300 text-left group mt-2 hover:bg-green-900/20 hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] p-1 rounded-r-sm"
+        className="border-l-2 border-green-500/40 pl-2 hover-depth transition-all duration-300 text-left group mt-2 hover:bg-green-900/20 hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] p-1 rounded-r-sm relative"
       >
         <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch">
             <Disc size={10} className={hasAudio && !isMuted ? "animate-spin" : ""}/> AUDIO_DECK
         </div>
         <div className={`text-lg font-bold tracking-widest transition-all ${hasAudio && !isMuted ? 'text-green-400' : 'text-white animate-pulse'}`}>
             {hasAudio && !isMuted ? '■ STOP' : '▶ PLAY'}
+        </div>
+        
+        {/* Hover Hint Tooltip */}
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-green-500 text-black px-3 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-[0_0_20px_rgba(34,197,94,0.6)] z-50">
+          <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-500"></div>
+          {hasAudio && !isMuted ? 'Click to mute audio' : 'Click to play background music'}
         </div>
       </button>
 
@@ -574,38 +580,46 @@ const TelemetrySidebar = ({
       {/* UP NEXT THUMBNAIL - CLICKABLE */}
       <div className="mt-4 border-t border-green-900/50 pt-2 flex flex-col gap-1 hidden md:flex">
         <div className="text-[8px] text-green-500 tracking-widest uppercase animate-pulse">UP NEXT</div>
-        <button 
-          onClick={onNext}
-          className="w-24 h-16 bg-green-900/10 border border-green-500/30 overflow-hidden relative group hover-depth transition-all duration-300 hover:border-green-400 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
-          title="Click to skip to next media"
-        >
-           {nextItem ? (
-             <>
-               {/* Preview Content */}
-               {(nextItem.type === 'image' || nextItem.type === 'gif') ? (
-                 <img src={nextItem.url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity grayscale hover:grayscale-0" alt="Next" />
-               ) : (
-                 <div className="w-full h-full flex items-center justify-center text-green-600 bg-green-900/20">
-                    {nextItem.type === 'video' ? <Film size={20} /> : <FileAudio size={20} />}
+        <div className="relative group">
+          <button 
+            onClick={onNext}
+            className="w-24 h-16 bg-green-900/10 border border-green-500/30 overflow-hidden relative hover-depth transition-all duration-300 hover:border-green-400 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
+            title="Click to skip to next media"
+          >
+             {nextItem ? (
+               <>
+                 {/* Preview Content */}
+                 {(nextItem.type === 'image' || nextItem.type === 'gif') ? (
+                   <img src={nextItem.url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity grayscale hover:grayscale-0" alt="Next" />
+                 ) : (
+                   <div className="w-full h-full flex items-center justify-center text-green-600 bg-green-900/20">
+                      {nextItem.type === 'video' ? <Film size={20} /> : <FileAudio size={20} />}
+                   </div>
+                 )}
+                 
+                 {/* Skip Icon Overlay on Hover */}
+                 <div className="absolute inset-0 bg-green-500/0 group-hover:bg-green-500/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all pointer-events-none">
+                   <SkipForward size={24} className="text-green-400 drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
                  </div>
-               )}
-               
-               {/* Skip Icon Overlay on Hover */}
-               <div className="absolute inset-0 bg-green-500/0 group-hover:bg-green-500/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all pointer-events-none">
-                 <SkipForward size={24} className="text-green-400 drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
+                 
+                 {/* Type Badge */}
+                 <div className="absolute bottom-0 right-0 bg-green-900/80 text-[8px] text-green-400 px-1 font-bold border-tl border-green-500/50">
+                   {nextItem.type.toUpperCase()}
+                 </div>
+               </>
+             ) : (
+               <div className="w-full h-full flex items-center justify-center text-green-800/50 text-[8px]">
+                 <Repeat size={16} />
                </div>
-               
-               {/* Type Badge */}
-               <div className="absolute bottom-0 right-0 bg-green-900/80 text-[8px] text-green-400 px-1 font-bold border-tl border-green-500/50">
-                 {nextItem.type.toUpperCase()}
-               </div>
-             </>
-           ) : (
-             <div className="w-full h-full flex items-center justify-center text-green-800/50 text-[8px]">
-               <Repeat size={16} />
-             </div>
-           )}
-        </button>
+             )}
+          </button>
+          
+          {/* Hover Hint Tooltip */}
+          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-green-500 text-black px-3 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-[0_0_20px_rgba(34,197,94,0.6)] z-50">
+            <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-500"></div>
+            Click to skip to next media
+          </div>
+        </div>
       </div>
       
       <div className="mt-auto text-[8px] text-green-800 leading-tight overflow-hidden h-20 flex flex-col-reverse font-mono pointer-events-none hidden md:flex">
