@@ -18,7 +18,9 @@ High-fidelity digital signage display with cyberpunk holographic interface. This
 - Password-protected admin panel (password: "b0untyf3ttYO!")
 - Dual color scheme toggle (Matrix GREEN / HOT NEON PINK)
 - Audio visualizer with background music support
+- **Independent audio system**: Plays all queued tracks continuously on loop until STOP button is pressed
 - Shuffle and sequential playback modes
+- **Decoupled systems**: Media carousel navigation operates independently from audio playback
 - Interactive navigation (swipe, keyboard, mouse wheel)
 - Direct-to-display loading (no blocking intro screen)
 - Works offline with localStorage when Firebase is not configured
@@ -80,6 +82,8 @@ npm run preview
   - ✅ **Made "UP NEXT" thumbnail clickable** - click to skip to next media, autoplay continues
   - ✅ **Added hover hint tooltips** - audio controls and UP NEXT preview show helpful hints on hover
   - ✅ **Fixed critical memory leak** - BackgroundAudio component now properly cleans up event listeners
+  - ✅ **Decoupled audio and media systems** - Audio loops continuously independent of carousel navigation
+  - ✅ Updated tooltips to clarify "Play all tracks on repeat" vs "Stop continuous audio loop"
   - ✅ Created SECURITY_AND_OPTIMIZATION.md guide
   - ✅ Created INTERACTIVE_EFFECTS_RECOMMENDATIONS.md with 10 effect ideas
   - ✅ Created OPTIMIZATION_GUIDE.md with comprehensive performance and deployment recommendations

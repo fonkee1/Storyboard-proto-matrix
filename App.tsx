@@ -365,6 +365,9 @@ const HoloFrame = ({ children, onInteract }: { children?: React.ReactNode, onInt
   );
 };
 
+// BackgroundAudio Component - Completely Independent from Media Carousel
+// Audio plays continuously in a loop through all queued tracks until user hits STOP
+// Media carousel navigation does NOT affect audio playback
 const BackgroundAudio = ({ 
   urls, 
   isMuted, 
@@ -383,12 +386,14 @@ const BackgroundAudio = ({
   
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
-  // Play Next Logic
+  // Play Next Track - Automatically loops through entire playlist continuously
+  // Sequential mode: plays all tracks in order, then loops back to start
+  // Shuffle mode: plays random tracks indefinitely
   const playNext = useCallback(() => {
     if (urls.length === 0) return;
     setCurrentTrackIndex(prev => {
       if (isShuffle) {
-        // Random index
+        // Random index for shuffle mode
         let next = Math.floor(Math.random() * urls.length);
         // Avoid repeating the same track if possible, unless only 1 exists
         if (urls.length > 1 && next === prev) {
@@ -396,7 +401,7 @@ const BackgroundAudio = ({
         }
         return next;
       } else {
-        // Sequential
+        // Sequential mode: loop back to 0 after last track
         return (prev + 1) % urls.length;
       }
     });
@@ -412,9 +417,9 @@ const BackgroundAudio = ({
   useEffect(() => {
     if (!currentUrl) return;
     
-    // Define event handler outside to enable cleanup
+    // When track ends, automatically play next track (continuous loop)
     const handleEnded = () => {
-      playNext();
+      playNext(); // This creates infinite playlist loop
     };
     
     const initAudio = () => {
@@ -567,7 +572,7 @@ const TelemetrySidebar = ({
         {/* Hover Hint Tooltip */}
         <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-green-500 text-black px-3 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-[0_0_20px_rgba(34,197,94,0.6)] z-50">
           <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-500"></div>
-          {hasAudio && !isMuted ? 'Click to mute audio' : 'Click to play background music'}
+          {hasAudio && !isMuted ? 'Stop continuous audio loop' : 'Play all tracks on repeat'}
         </div>
       </button>
 
