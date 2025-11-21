@@ -1261,6 +1261,20 @@ export default function App() {
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [showIntro, setShowIntro] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [skinColor, setSkinColor] = useState<'green' | 'pink'>(() => {
+    const saved = localStorage.getItem('ces-2026-skin');
+    return (saved as 'green' | 'pink') || 'green';
+  });
+
+  // Apply skin to body element
+  useEffect(() => {
+    if (skinColor === 'pink') {
+      document.body.classList.add('skin-pink');
+    } else {
+      document.body.classList.remove('skin-pink');
+    }
+    localStorage.setItem('ces-2026-skin', skinColor);
+  }, [skinColor]);
 
   // Construct audio playlist
   const audioUrls = useMemo(() => {
@@ -1363,7 +1377,7 @@ export default function App() {
           </div>
         </HoloFrame>
       ) : (
-        <AdminDashboard media={media} settings={settings} user={user} onExit={() => setViewMode('public')} actions={actions} />
+        <AdminDashboard media={media} settings={settings} user={user} onExit={() => setViewMode('public')} actions={actions} skinColor={skinColor} setSkinColor={setSkinColor} />
       )}
     </div>
   );

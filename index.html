@@ -98,9 +98,23 @@
       }
     </script>
     <style>
+      :root {
+        --primary-color: #00ff41;
+        --primary-dark: #050a05;
+        --primary-dim: #0a140a;
+        --primary-bright: #ccffcc;
+      }
+
+      body.skin-pink {
+        --primary-color: #ff006e;
+        --primary-dark: #0a0505;
+        --primary-dim: #140a0a;
+        --primary-bright: #ffccee;
+      }
+
       body {
         background-color: #000;
-        color: #00ff41;
+        color: var(--primary-color);
         overflow: hidden;
         touch-action: none; /* Prevent mobile scroll/zoom */
       }
@@ -109,13 +123,13 @@
         width: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #050a05; 
+        background: var(--primary-dark); 
       }
       ::-webkit-scrollbar-thumb {
-        background: #00ff41; 
+        background: var(--primary-color); 
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #ccffcc; 
+        background: var(--primary-bright); 
       }
       
       /* Mask for marquee fade */
