@@ -78,8 +78,11 @@ npm run preview
   - ✅ Added keyboard navigation (Arrow Right or Space to advance)
   - ✅ **Fixed media carousel timing bugs** - removed fade transitions, timer now starts after media loads
   - ✅ **Made "UP NEXT" thumbnail clickable** - click to skip to next media, autoplay continues
+  - ✅ **Added hover hint tooltips** - audio controls and UP NEXT preview show helpful hints on hover
+  - ✅ **Fixed critical memory leak** - BackgroundAudio component now properly cleans up event listeners
   - ✅ Created SECURITY_AND_OPTIMIZATION.md guide
   - ✅ Created INTERACTIVE_EFFECTS_RECOMMENDATIONS.md with 10 effect ideas
+  - ✅ Created OPTIMIZATION_GUIDE.md with comprehensive performance and deployment recommendations
   - Changed dev server port from 3000 to 5000
   - Configured HMR for Replit proxy support
   - Installed dependencies

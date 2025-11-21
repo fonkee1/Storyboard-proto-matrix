@@ -412,6 +412,11 @@ const BackgroundAudio = ({
   useEffect(() => {
     if (!currentUrl) return;
     
+    // Define event handler outside to enable cleanup
+    const handleEnded = () => {
+      playNext();
+    };
+    
     const initAudio = () => {
        if (!audioRef.current) {
          audioRef.current = new Audio();
@@ -420,9 +425,7 @@ const BackgroundAudio = ({
          audioRef.current.autoplay = true;
          
          // Attach end listener
-         audioRef.current.addEventListener('ended', () => {
-            playNext();
-         });
+         audioRef.current.addEventListener('ended', handleEnded);
        }
        
        // Only update src if changed to avoid reload
@@ -477,6 +480,10 @@ const BackgroundAudio = ({
     }
 
     return () => {
+       // Clean up all event listeners to prevent memory leaks
+       if (audioRef.current) {
+         audioRef.current.removeEventListener('ended', handleEnded);
+       }
        window.removeEventListener('click', unlock);
        window.removeEventListener('touchstart', unlock);
     };
