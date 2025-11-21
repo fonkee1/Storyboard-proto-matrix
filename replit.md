@@ -75,6 +75,17 @@ npm run preview
 - **URL Management**: Edit `production-config.json` to update production media/settings, then redeploy
 
 ## Recent Changes
+- **2025-11-21**: CRITICAL FIX - Media carousel autoplay completely rebuilt
+  - ✅ **Fixed autoplay blocking after manual navigation** - removed hasAdvancedRef check from timer scheduling
+  - ✅ **Moved timer scheduling into useEffect** - triggers on item change, handles cached images properly
+  - ✅ **Removed safeAdvance from dependencies** - prevents unwanted effect re-runs
+  - ✅ **hasAdvancedRef resets on every item change** - ensures continuous autoplay
+  - ✅ **Verified infinite looping** - carousel cycles through all media types continuously
+  - ✅ **Manual navigation + autoplay coexist** - keyboard/swipe/click jumps to item, autoplay resumes
+  - ✅ **Production-ready for 24/7 CES display** - tested continuous rotation across images/GIFs/videos
+  - ✅ Videos use onEnded + fallback timer, images/GIFs use immediate duration timer
+  - ✅ No race conditions or double-advance scenarios
+
 - **2025-11-21**: Media carousel reliability fixes and video muting
   - ✅ Fixed carousel hanging between media transitions (images, GIFs, videos)
   - ✅ Implemented safeAdvance guard to prevent double-advance race conditions
@@ -83,7 +94,6 @@ npm run preview
   - ✅ Robust error handling for failed media loads
   - ✅ Simplified video playback logic - uses natural autoPlay + onEnded flow
   - ✅ Added user interaction unlock for browsers that block autoplay
-  - ✅ Production-ready for 24/7 operation with continuous rotation
 
 - **2025-11-21**: Production deployment system and environment-aware configuration
   - ✅ Created production-config.json with locked-in media URLs and settings
