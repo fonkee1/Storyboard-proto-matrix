@@ -1028,6 +1028,7 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
   const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartX = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasAdvancedRef = useRef(false); // Prevent double-advance
 
   // Keyboard and swipe navigation
   useEffect(() => {
@@ -1055,20 +1056,28 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
     };
   }, [onNext]);
 
-  // Media timing logic - only start timer AFTER media is loaded
-  useEffect(() => {
-    if (!item) return;
-
+  // Helper to safely advance (prevents double-advance)
+  const safeAdvance = useCallback(() => {
+    if (hasAdvancedRef.current) return; // Already advanced for this item
+    hasAdvancedRef.current = true;
+    
     // Clear any existing timer
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+    
+    onNext();
+  }, [onNext]);
 
-    // For videos, reset and play
-    if (item.type === 'video' && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(e => console.warn("Video play failed", e));
+  // Reset advance flag when item changes
+  useEffect(() => {
+    hasAdvancedRef.current = false;
+    
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
 
     // Cleanup on unmount or item change
@@ -1078,24 +1087,72 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
         timerRef.current = null;
       }
     };
-  }, [item?.id, item?.type]);
+  }, [item?.id]);
 
   // Start timer when image/gif loads
-  const handleImageLoad = () => {
-    if (!item || timerRef.current) return;
+  const handleImageLoad = useCallback(() => {
+    if (!item || hasAdvancedRef.current) return;
     
     if (item.type === 'image' || item.type === 'gif') {
+      // Clear any existing timer first
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      
       const duration = (item.duration || 5) * 1000;
       timerRef.current = setTimeout(() => {
-        onNext();
+        safeAdvance();
       }, duration);
     }
-  };
+  }, [item, safeAdvance]);
 
-  // Start timer when video is ready
-  const handleVideoReady = () => {
-    // Video will use onEnded event instead of timer
-  };
+  // Start timer when video is ready and play it
+  const handleVideoReady = useCallback(() => {
+    if (!item || item.type !== 'video' || !videoRef.current || hasAdvancedRef.current) return;
+    
+    const video = videoRef.current;
+    
+    // Clear any existing timer first (prevent race conditions)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    // Ensure video is muted and volume is 0
+    video.muted = true;
+    video.volume = 0;
+    
+    // Reset and play
+    video.currentTime = 0;
+    const playPromise = video.play();
+    
+    if (playPromise !== undefined) {
+      playPromise.catch(e => {
+        console.warn("Video autoplay failed:", e);
+        // Fallback: advance after duration even if video doesn't play
+        const duration = (item.duration || 10) * 1000;
+        timerRef.current = setTimeout(() => {
+          safeAdvance();
+        }, duration);
+      });
+    }
+    
+    // Fallback safety timer: advance even if onEnded doesn't fire
+    // Use video duration if available, else use item.duration
+    const getDuration = () => {
+      if (video.duration && !isNaN(video.duration) && isFinite(video.duration)) {
+        return video.duration * 1000;
+      }
+      return (item.duration || 10) * 1000;
+    };
+    
+    // Add 1000ms buffer to let onEnded fire first
+    timerRef.current = setTimeout(() => {
+      console.log("Video fallback timer triggered");
+      safeAdvance();
+    }, getDuration() + 1000);
+  }, [item, safeAdvance]);
 
   // Preload next item
   useEffect(() => {
@@ -1140,9 +1197,18 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
             className="w-full h-full object-contain"
             muted
             playsInline
-            onEnded={onNext}
-            onLoadedData={handleVideoReady}
-            onCanPlay={handleVideoReady}
+            loop={false}
+            preload="auto"
+            onEnded={() => {
+              console.log("Video ended naturally");
+              safeAdvance();
+            }}
+            onCanPlayThrough={handleVideoReady}
+            onError={(e) => {
+              console.error("Video load error:", e);
+              // Advance to next if video fails (use safeAdvance to prevent double-trigger)
+              setTimeout(() => safeAdvance(), 1000);
+            }}
             key={item.id}
          />
        )}
