@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Extract Config</title>
+</head>
+<body>
+    <h1>Extract localStorage Configuration</h1>
+    <button onclick="extractConfig()">Extract Config</button>
+    <pre id="output" style="background: #f0f0f0; padding: 20px; margin-top: 20px;"></pre>
+    
+    <script>
+        function extractConfig() {
+            const appId = '726996-469771-740757';
+            const mediaKey = `ces_media_${appId}`;
+            const settingsKey = `ces_settings_${appId}`;
+            
+            const media = localStorage.getItem(mediaKey);
+            const settings = localStorage.getItem(settingsKey);
+            
+            const output = {
+                media: media ? JSON.parse(media) : null,
+                settings: settings ? JSON.parse(settings) : null
+            };
+            
+            document.getElementById('output').textContent = JSON.stringify(output, null, 2);
+            console.log('COPY THIS CONFIG:');
+            console.log(JSON.stringify(output, null, 2));
+        }
+    </script>
+</body>
+</html>
