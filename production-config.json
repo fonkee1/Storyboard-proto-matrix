@@ -1,48 +1,63 @@
 {
   "media": [
     {
-      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763698399/BeUnique_Logo_zgrqo3.png",
+      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763698399/BeUnique_Logo_2_Color_For_Black_Background_nncr4y.png",
+      "type": "image",
+      "duration": 4
+    },
+    {
+      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763762298/Holographic_Display_Video_Generation_nwkwtw.mp4",
+      "type": "video",
+      "duration": 6
+    },
+    {
+      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763762298/Futuristic_Vegas_Booth_Build_Video_wlvltb.mp4",
+      "type": "video",
+      "duration": 6
+    },
+    {
+      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763762408/CES_FRONT6_002_vcehad.jpg",
+      "type": "image",
+      "duration": 4
+    },
+    {
+      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763762408/IMG_9451_ldtsni.jpg",
+      "type": "image",
+      "duration": 4
+    },
+    {
+      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763762407/IMG_9450_gnfg5b.jpg",
+      "type": "image",
+      "duration": 4
+    },
+    {
+      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763762406/IMG_9446_xvdlkv.jpg",
+      "type": "image",
+      "duration": 4
+    },
+    {
+      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763679588/UAG-BeUnique1_fuvvoc.gif",
       "type": "image",
       "duration": 5
     },
     {
-      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763759753/Cyberpunk_LED_Grid_Ripple_Background_xzuwmc.mp4",
+      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763762288/Booth_Video_With_Motion_Effects_q1sdon.mp4",
       "type": "video",
-      "duration": 10
+      "duration": 6
     },
     {
-      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763679531/CES-2026-1_z8s5vt.gif",
-      "type": "image",
-      "duration": 5
-    },
-    {
-      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763445870/Digital_Rain_Seamless_Loop_ddpj7d.mp4",
+      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763762289/Synthwave_Robot_Transformation_Video_vdjxfz.mp4",
       "type": "video",
-      "duration": 5
-    },
-    {
-      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763445888/Cyberpunk_City_Neon_Rain_Seamless_Loop_axtxny.mp4",
-      "type": "video",
-      "duration": 5
-    },
-    {
-      "url": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763465327/beuniq-blue-1_i2sbmg.png",
-      "type": "image",
-      "duration": 5
-    },
-    {
-      "url": "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763759753/Cyberpunk_LED_Grid_Ripple_Background_xzuwmc.mp4",
-      "type": "video",
-      "duration": 10
+      "duration": 6
     }
   ],
   "settings": {
-    "marqueeText": "HACKED BY BE UNIQUE EXHIBITS",
-    "logoUrl": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763698399/BeUnique_Logo_zgrqo3.png",
+    "marqueeText": "PRESENTED BY BE UNIQUE EXHIBITS",
+    "logoUrl": "https://res.cloudinary.com/dfmlqdq1m/image/upload/v1763698399/BeUnique_Logo_2_Color_For_Black_Background_nncr4y.png",
     "audioChannels": [
-      "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763674133/eMastered_-_sample_no_auto_master_7TnC_1733771654672_z0iswx.mp3",
-      "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763674131/eMastered_-_sample_no_auto_master_7TnC_1733771654672_3_bqbv52.mp3",
-      "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763760081/eMastered_-_sample_no_auto_master_7TnC_1733771654672_4_h3g1ie.mp3"
+      "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763760081/eMastered_Hyperpop_Wavetick_126_Synth_Loop_C_Lead_Arp_nswjf5.mp3",
+      "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763674133/eMastered_Bass_Fm_96bpm_dzkyrf.mp3",
+      "https://res.cloudinary.com/dfmlqdq1m/video/upload/v1763674131/eMastered_Bass_Drums_Bbm_96bpm_mmkl5x.mp3"
     ]
   }
 }
