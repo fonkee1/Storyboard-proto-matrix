@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html><head><title>Config Extractor</title></head><body>
+<h2>Click to Extract Config</h2>
+<button onclick="extract()" style="padding: 20px; font-size: 18px; cursor: pointer;">EXTRACT CONFIG</button>
+<pre id="out" style="margin-top: 20px; background: #f0f0f0; padding: 20px; white-space: pre-wrap; word-wrap: break-word;"></pre>
+<script>
+function extract() {
+  const appId = '726996-469771-740757';
+  const media = JSON.parse(localStorage.getItem('ces_media_' + appId) || '[]');
+  const settings = JSON.parse(localStorage.getItem('ces_settings_' + appId) || '{}');
+  
+  const config = {
+    media: media.map((item, i) => ({
+      url: item.url,
+      type: item.type,
+      duration: item.duration || 5
+    })),
+    settings: {
+      marqueeText: settings.marqueeText || 'PRESENTED BY BE UNIQUE EXHIBITS',
+      logoUrl: settings.logoUrl || '',
+      audioChannels: [
+        settings.audioUrl || '',
+        settings.audioUrl2 || '',
+        settings.audioUrl3 || ''
+      ].filter(Boolean)
+    }
+  };
+  
+  document.getElementById('out').textContent = JSON.stringify(config, null, 2);
+  console.log('COPY THIS:');
+  console.log(JSON.stringify(config, null, 2));
+}
+</script>
+</body></html>
