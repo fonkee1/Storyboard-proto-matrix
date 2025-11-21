@@ -1002,7 +1002,7 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
            videoRef.current.play().catch(e => console.warn("Video play failed", e));
        }
     }
-  }, [item.id, item.type, item.duration, onNext]);
+  }, [item.id, item.type, item.duration]);
 
   // Preload next item
   useEffect(() => {
