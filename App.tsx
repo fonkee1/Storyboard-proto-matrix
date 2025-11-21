@@ -669,8 +669,8 @@ const FullWidthVisualizer = ({ analyser }: { analyser: AnalyserNode | null }) =>
       animId = requestAnimationFrame(draw);
       analyser.getByteTimeDomainData(dataArray);
 
-      // Check for pink skin
-      const isPink = document.body.classList.contains('skin-pink');
+      // Check for pink skin (with safety check for SSR)
+      const isPink = typeof document !== 'undefined' && document.body.classList.contains('skin-pink');
       const waveColor = isPink ? '#ff006e' : '#00ff41';
 
       // Trail effect
@@ -778,15 +778,20 @@ const MatrixRain = () => {
         }
         lastTime = time;
 
+        // Check for pink skin mode (with safety check for SSR)
+        const isPink = typeof document !== 'undefined' && document.body.classList.contains('skin-pink');
+        const baseColor = isPink ? '#ff006e' : '#0F0'; // Hot pink or Matrix green
+        const pulseColor = isPink ? '#ffb3d9' : '#AFA'; // Bright pink or bright green
+
         ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = '#0F0';
+        ctx.fillStyle = baseColor;
         ctx.font = '10px monospace';
 
         // Pulse effect every ~3 seconds
         const isPulse = Math.floor(time / 3000) % 2 === 0 && (time % 3000) < 200;
-        if (isPulse) ctx.fillStyle = '#AFA'; // Bright flash
+        if (isPulse) ctx.fillStyle = pulseColor; // Bright flash
 
         for (let i = 0; i < drops.length; i++) {
             const text = String.fromCharCode(0x30A0 + Math.random() * 96);
