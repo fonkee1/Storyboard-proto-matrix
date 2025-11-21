@@ -303,6 +303,35 @@ const GlitchOverlay = () => (
   </div>
 );
 
+const SlotText = ({ text }: { text: string }) => {
+  const [display, setDisplay] = useState(text);
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&";
+
+  useEffect(() => {
+    let iteration = 0;
+    const interval = setInterval(() => {
+      setDisplay(prev => 
+        text.split("").map((char, index) => {
+          if (index < iteration) {
+            return text[index];
+          }
+          return chars[Math.floor(Math.random() * chars.length)];
+        }).join("")
+      );
+      
+      if (iteration >= text.length) {
+        clearInterval(interval);
+      }
+      
+      iteration += 1/3; // Slower speed for more visible effect
+    }, 40);
+    
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return <span>{display}</span>;
+};
+
 const HoloFrame = ({ children, onInteract }: { children?: React.ReactNode, onInteract?: () => void }) => {
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -466,8 +495,8 @@ const TelemetrySidebar = ({
 }: { 
   isMuted: boolean, 
   toggleMute: () => void, 
-  isShuffle: boolean,
-  toggleShuffle: () => void,
+  isShuffle: boolean, 
+  toggleShuffle: () => void, 
   hasAudio: boolean, 
   nextItem?: MediaItem 
 }) => {
@@ -484,12 +513,14 @@ const TelemetrySidebar = ({
     return () => clearInterval(interval);
   }, []);
 
+  const statBoxClass = "border-l-2 border-green-500/40 pl-2 hover-depth transition-all duration-300 hidden md:block hover:bg-green-900/20 hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] p-1 rounded-r-sm cursor-default";
+
   return (
     <div className="absolute right-4 top-4 bottom-4 w-32 z-40 flex flex-col justify-center gap-4 pointer-events-auto opacity-90 translate-z-20 transition-transform duration-500 md:translate-x-0 translate-x-full">
       
       <button 
         onClick={toggleMute}
-        className={`border-l-2 pl-2 text-left transition-all duration-300 hover:bg-green-900/20 ${hasAudio && !isMuted ? 'border-green-500' : 'border-red-500/50 opacity-50'}`}
+        className={`border-l-2 pl-2 text-left transition-all duration-300 hover:bg-green-900/20 hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] hover-depth p-1 rounded-r-sm ${hasAudio && !isMuted ? 'border-green-500' : 'border-red-500/50 opacity-50'}`}
       >
         <div className={`text-[10px] mb-1 flex items-center gap-1 ${hasAudio && !isMuted ? 'text-green-500' : 'text-red-500'}`}>
           {hasAudio && !isMuted ? <Volume2 size={10}/> : <VolumeX size={10}/>} AUDIO_LINK
@@ -499,15 +530,15 @@ const TelemetrySidebar = ({
         </div>
       </button>
 
-      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300 hidden md:block">
+      <div className={statBoxClass}>
         <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Wifi size={10}/> MATRIX_UPLINK</div>
         <div className="text-lg text-green-50 font-bold tracking-widest">CONNECTED</div>
       </div>
-      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300 hidden md:block">
+      <div className={statBoxClass}>
         <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Activity size={10}/> FRAMERATE</div>
         <div className="text-lg text-green-50 font-bold tracking-widest">{stats.fps}</div>
       </div>
-      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300">
+      <div className={statBoxClass}>
         <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Cpu size={10}/> CORE_TEMP</div>
         <div className="text-lg text-green-50 font-bold tracking-widest">{stats.temp}°C</div>
       </div>
@@ -515,7 +546,7 @@ const TelemetrySidebar = ({
       {/* AUDIO CONTROL BUTTON */}
       <button
         onClick={toggleMute}
-        className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300 text-left group mt-2"
+        className="border-l-2 border-green-500/40 pl-2 hover-depth transition-all duration-300 text-left group mt-2 hover:bg-green-900/20 hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] p-1 rounded-r-sm"
       >
         <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch">
             <Disc size={10} className={hasAudio && !isMuted ? "animate-spin" : ""}/> AUDIO_DECK
@@ -528,7 +559,7 @@ const TelemetrySidebar = ({
        {/* SHUFFLE CONTROL BUTTON */}
       <button
         onClick={toggleShuffle}
-        className={`border-l-2 pl-2 hover-depth transition-transform duration-300 text-left group mt-2 ${isShuffle ? 'border-green-500' : 'border-green-500/30'}`}
+        className={`border-l-2 pl-2 hover-depth transition-all duration-300 text-left group mt-2 hover:bg-green-900/20 hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] p-1 rounded-r-sm ${isShuffle ? 'border-green-500' : 'border-green-500/30'}`}
       >
         <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch">
             <Shuffle size={10} className={isShuffle ? "text-green-400" : "text-green-800"}/> PLAY_MODE
@@ -541,7 +572,7 @@ const TelemetrySidebar = ({
       {/* UP NEXT THUMBNAIL */}
       <div className="mt-4 border-t border-green-900/50 pt-2 flex flex-col gap-1 hidden md:flex">
         <div className="text-[8px] text-green-500 tracking-widest uppercase animate-pulse">UP NEXT</div>
-        <div className="w-24 h-16 bg-green-900/10 border border-green-500/30 overflow-hidden relative group">
+        <div className="w-24 h-16 bg-green-900/10 border border-green-500/30 overflow-hidden relative group hover-depth transition-transform duration-300 hover:border-green-400 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]">
            {nextItem ? (
              <>
                {/* Preview Content */}
@@ -806,8 +837,12 @@ const Countdown = () => {
            </h2>
            <div className="h-12 w-[2px] bg-green-800/50"></div>
            <div className="flex flex-col justify-center">
-              <span className="font-display font-bold text-xl text-green-100 tracking-[0.2em] leading-none">THE COOLEST</span>
-              <span className="font-display font-bold text-xl text-green-600 tracking-[0.2em] leading-none">TECH EXPO</span>
+              <span className="font-display font-bold text-xl text-green-100 tracking-[0.2em] leading-none">
+                <SlotText text="THE COOLEST" />
+              </span>
+              <span className="font-display font-bold text-xl text-green-600 tracking-[0.2em] leading-none">
+                <SlotText text="TECH EXPO" />
+              </span>
            </div>
         </div>
 
@@ -827,9 +862,11 @@ const Countdown = () => {
         </div>
 
         {/* RIGHT: LOCATION */}
-        <div className="flex items-center gap-4 text-right hidden md:flex">
-           {/* ROBOT HEAD: Size tripled from 32 to 96 */}
-           <Bot size={96} className="text-green-500 animate-bounce" />
+        <div className="flex items-center gap-12 text-right hidden md:flex">
+           {/* ROBOT HEAD: Size tripled from 32 to 96. Bouncing AND spinning horizontally. */}
+           <div className="animate-bounce">
+              <Bot size={96} className="text-green-500 animate-spin-y" />
+           </div>
            <div>
               <div className="text-2xl font-mono font-bold text-green-50 tracking-widest">LAS VEGAS</div>
               <div className="text-green-600 text-xs font-mono tracking-[0.3em]">NV // 36.1716° N</div>
@@ -842,506 +879,346 @@ const Countdown = () => {
   );
 };
 
-const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], currentIndex: number, onNext: () => void }) => {
-  const [isFlickering, setIsFlickering] = useState(false);
-  const [hasError, setHasError] = useState(false); 
-  const [debugInfo, setDebugInfo] = useState('');
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
+  const [step, setStep] = useState(0);
 
-  const currentItem = useMemo(() => media[currentIndex], [media, currentIndex]);
-  
-  // Preload next item
-  const nextItem = useMemo(() => {
-      if (media.length <= 1) return null;
-      return media[(currentIndex + 1) % media.length];
-  }, [media, currentIndex]);
-
-  const triggerNext = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    
-    setIsFlickering(true);
-    setTimeout(() => {
-      onNext();
-      setHasError(false);
-      setDebugInfo('');
-      setTimeout(() => setIsFlickering(false), 100); 
-    }, 200);
-  }, [onNext]);
-
-  const handleResourceError = useCallback((e: React.SyntheticEvent<HTMLVideoElement | HTMLImageElement | HTMLAudioElement>, url: string) => {
-    // Don't trigger double errors
-    if (hasError) return;
-    
-    let msg = "UNKNOWN_ERROR";
-    if (e.currentTarget instanceof HTMLVideoElement && e.currentTarget.error) {
-        msg = `CODE_${e.currentTarget.error.code} :: ${e.currentTarget.error.message}`;
-    } else {
-        msg = "LOAD_FAILED :: 404_OR_CORS";
-    }
-    
-    setHasError(true);
-    setDebugInfo(msg);
-    
-    // Auto-skip after delay
-    timeoutRef.current = setTimeout(triggerNext, 5000);
-  }, [hasError, triggerNext]);
-
-  const handleRetry = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setHasError(false);
-    setDebugInfo('');
-    // Force re-render of same index
-    setIsFlickering(true);
-    setTimeout(() => setIsFlickering(false), 50);
+  useEffect(() => {
+    const timer = setTimeout(() => setStep(1), 1000);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Clean up video elements on unmount to prevent memory leaks
-  useEffect(() => {
-    return () => {
-        if (videoRef.current) {
-            videoRef.current.pause();
-            videoRef.current.removeAttribute('src');
-            videoRef.current.load();
-        }
-    };
-  }, [currentItem]);
-
-  // Auto-progression logic
-  useEffect(() => {
-    if (!currentItem) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    // IMAGE/GIF: Timer based
-    if ((currentItem.type === 'image' || currentItem.type === 'gif') && !hasError) {
-      timeoutRef.current = setTimeout(triggerNext, (currentItem.duration || 10) * 1000);
-    }
-    
-    // VIDEO/AUDIO: Robust Autoplay
-    if ((currentItem.type === 'video' || currentItem.type === 'audio') && !hasError) {
-         const el = videoRef.current;
-         if (el) {
-             // Video: Force mute via prop AND logic to ensuring autoplay works on strict browsers
-             if (currentItem.type === 'video') {
-                 el.muted = true;
-             }
-
-             if (el.paused) {
-                const playPromise = el.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.log("Auto-play prevented:", error);
-                        // Try one more time with forceful mute if it was a policy error
-                        if (currentItem.type === 'video' && error.name === 'NotAllowedError') {
-                            el.muted = true;
-                            el.play().catch(e => console.error("Double fail", e));
-                        }
-                    });
-                }
-             }
-         }
-    }
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [currentItem, triggerNext, hasError]);
-
-  if (!media.length) return (
-    <div className="w-full h-full flex items-center justify-center bg-black text-green-600/50 font-mono">
-      <div className="text-center">
-        <div className="animate-spin mb-4 mx-auto w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full"/>
-        <p className="tracking-widest text-xs">INITIALIZING CONSTRUCT...</p>
-      </div>
-    </div>
-  );
-
-  if (!currentItem) return null;
-
   return (
-    <div className={`absolute inset-0 flex items-center justify-center z-10 bg-black transition-opacity duration-100 ${isFlickering ? 'opacity-0 scale-95 filter blur-sm' : 'opacity-100 scale-100 filter blur-0'}`}>
-      
-      {/* Invisible Preloader for Next Item */}
-      <div className="hidden">
-          {nextItem && (nextItem.type === 'image' || nextItem.type === 'gif') && (
-              <img src={nextItem.url} alt="preload" />
-          )}
-      </div>
+    <div className="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center text-green-500 font-mono cursor-pointer" onClick={onComplete}>
+      <div className="max-w-lg w-full p-8 border border-green-900/50 bg-green-900/10 backdrop-blur relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-scanlines"></div>
+        
+        <div className="text-center space-y-6 relative z-10">
+           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-green-300 to-green-800">
+             CES 2026
+           </h1>
+           
+           <div className="text-sm tracking-[0.5em] text-green-400/80">
+             CONSUMER ELECTRONICS SHOW
+           </div>
 
-      {hasError ? (
-        <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
-          {/* Fallback Background */}
-          <img src={FALLBACK_URL} alt="Fallback" className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale" />
-          
-          <div className="z-10 bg-black/80 border border-red-500/50 p-8 text-red-500 animate-pulse text-center backdrop-blur-md max-w-xl">
-            <AlertTriangle size={64} className="mb-4 mx-auto" />
-            <h2 className="text-2xl font-bold tracking-widest">SIGNAL CORRUPTED</h2>
-            <p className="text-xs font-mono mt-2 opacity-70">{debugInfo}</p>
-            <p className="text-[10px] font-mono mt-1 opacity-50 break-all">{currentItem.url}</p>
-            
-            <div className="flex gap-4 justify-center mt-6">
-                <button 
-                    onClick={handleRetry}
-                    className="border border-green-500 text-green-500 px-4 py-2 text-xs font-bold hover:bg-green-500 hover:text-black transition-colors flex items-center gap-2"
-                >
-                    <RotateCcw size={12} /> RETRY
-                </button>
-                <button 
-                    onClick={triggerNext}
-                    className="border border-red-500 text-red-500 px-4 py-2 text-xs font-bold hover:bg-red-500 hover:text-black transition-colors flex items-center gap-2"
-                >
-                    <SkipForward size={12} /> FORCE_SKIP
-                </button>
-            </div>
-          </div>
+           <div className="h-px w-full bg-green-800/50 my-8"></div>
+
+           <div className={`transition-opacity duration-1000 ${step >= 1 ? 'opacity-100' : 'opacity-0'}`}>
+              <button 
+                className="px-8 py-3 bg-green-500 text-black font-bold tracking-widest hover:bg-green-400 transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] uppercase"
+              >
+                Initialize System
+              </button>
+           </div>
+           
+           <div className="mt-8 text-[10px] text-green-800 animate-pulse">
+             SECURE CONNECTION REQUIRED // CLICK TO ENTER
+           </div>
         </div>
-      ) : (
-        <>
-           {currentItem.type === 'video' && (
-             <video
-               ref={(el) => {
-                 // Callback ref to strictly enforce properties before mount completes
-                 if (el) {
-                   el.muted = true;
-                   videoRef.current = el;
-                 }
-               }}
-               key={currentItem.id}
-               src={currentItem.url}
-               loop={media.length === 1}
-               playsInline
-               autoPlay
-               muted={true} // Explicit JSX prop
-               preload="auto"
-               className="w-full h-full object-contain"
-               onEnded={media.length > 1 ? triggerNext : undefined}
-               onError={(e) => handleResourceError(e, currentItem.url)}
-             />
-           )}
-           {(currentItem.type === 'image' || currentItem.type === 'gif') && (
-             <img 
-               key={currentItem.id}
-               src={currentItem.url} 
-               className="w-full h-full object-contain"
-               alt=""
-               onError={(e) => handleResourceError(e, currentItem.url)}
-             />
-           )}
-           {currentItem.type === 'audio' && (
-             <div className="w-full h-full flex flex-col items-center justify-center bg-black relative overflow-hidden">
-                <div className="absolute inset-0 bg-green-900/10 animate-pulse" />
-                <AudioWaveform size={128} className="text-green-500 animate-pulse mb-8 relative z-10" />
-                <h2 className="text-3xl font-display font-bold text-white tracking-widest animate-text-glitch relative z-10">AUDIO TRANSMISSION</h2>
-                <p className="font-mono text-green-500/70 mt-4 text-xs border border-green-500/30 p-2 relative z-10">{currentItem.url.split('/').pop()}</p>
-                <audio
-                    ref={videoRef as any}
-                    key={currentItem.id}
-                    src={currentItem.url}
-                    autoPlay
-                    onEnded={media.length > 1 ? triggerNext : undefined}
-                    onError={(e) => handleResourceError(e, currentItem.url)}
-                />
-             </div>
-           )}
-        </>
-      )}
+      </div>
+      <MatrixRain />
     </div>
   );
 };
 
-const AdminDashboard = ({ media, settings, user, onExit, actions }: { 
+const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], currentIndex: number, onNext: () => void }) => {
+  const item = media[currentIndex];
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Reset load state when index changes
+  useEffect(() => {
+      setIsLoaded(false);
+  }, [item]);
+
+  useEffect(() => {
+    if (!item) return;
+
+    if (item.type === 'image' || item.type === 'gif') {
+      const timer = setTimeout(() => {
+        onNext();
+      }, (item.duration || 5) * 1000);
+      return () => clearTimeout(timer);
+    } else if (item.type === 'video') {
+       if (videoRef.current) {
+           videoRef.current.currentTime = 0;
+           videoRef.current.play().catch(e => console.warn("Video play failed", e));
+       }
+    }
+  }, [item, onNext]);
+
+  // Preload next item
+  useEffect(() => {
+    if (media.length > 1) {
+        const nextItem = media[(currentIndex + 1) % media.length];
+        if (nextItem.type === 'image' || nextItem.type === 'gif') {
+            const img = new Image();
+            img.src = nextItem.url;
+        }
+    }
+  }, [currentIndex, media]);
+
+  if (!item && media.length === 0) {
+     return (
+         <div className="w-full h-full flex flex-col items-center justify-center text-green-500/50 gap-4">
+             <AlertTriangle size={48} />
+             <div className="font-mono tracking-widest">NO MEDIA DATA</div>
+             <div className="text-xs">UPLOAD CONTENT IN ADMIN PANEL</div>
+         </div>
+     );
+  }
+
+  if (!item) return null;
+
+  return (
+    <div className="w-full h-full bg-black relative group">
+       {/* Media Content */}
+       {(item.type === 'image' || item.type === 'gif') && (
+         <img 
+            src={item.url} 
+            alt="Display" 
+            className={`w-full h-full object-contain transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} 
+            onLoad={() => setIsLoaded(true)}
+            key={item.id} // Force remount for animation
+         />
+       )}
+       
+       {item.type === 'video' && (
+         <video
+            ref={videoRef}
+            src={item.url}
+            className={`w-full h-full object-contain transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+            muted
+            playsInline
+            onEnded={onNext}
+            onLoadedData={() => setIsLoaded(true)}
+            key={item.id}
+         />
+       )}
+
+       {/* Overlay Info */}
+       <div className="absolute top-4 left-4 bg-black/50 backdrop-blur px-2 py-1 border-l-2 border-green-500 text-[10px] font-mono text-green-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+         ID: {item.id.slice(0,8).toUpperCase()} // TYPE: {item.type.toUpperCase()}
+       </div>
+    </div>
+  );
+};
+
+const AdminDashboard = ({ 
+  media, 
+  settings, 
+  user, 
+  onExit, 
+  actions 
+}: { 
   media: MediaItem[], 
   settings: AppSettings, 
-  user: any,
-  onExit: () => void,
-  actions: any
+  user: any, 
+  onExit: () => void, 
+  actions: any 
 }) => {
-  const [newMediaUrl, setNewMediaUrl] = useState('');
-  const [newMediaType, setNewMediaType] = useState<MediaType>('image');
-  const [newMediaDuration, setNewMediaDuration] = useState(10);
+  const [newUrl, setNewUrl] = useState('');
+  const [newType, setNewType] = useState<MediaType>('image');
+  const [newDuration, setNewDuration] = useState(10);
+  const [activeTab, setActiveTab] = useState<'media' | 'settings'>('media');
+  
+  // Settings State
   const [localSettings, setLocalSettings] = useState(settings);
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => { setLocalSettings(settings); }, [settings]);
 
-  const handleAddMedia = async (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMediaUrl) return;
-    
-    if (!newMediaUrl.includes('://') && !newMediaUrl.startsWith('/')) {
-        alert("Invalid URL format");
-        return;
-    }
-
-    await actions.addMedia(newMediaUrl, newMediaType, Number(newMediaDuration));
-    setNewMediaUrl('');
+    if (!newUrl) return;
+    await actions.addMedia(newUrl, newType, newDuration);
+    setNewUrl('');
   };
 
   const handleSaveSettings = async () => {
-    setIsSaving(true);
-    await actions.updateSettings(localSettings);
-    setTimeout(() => setIsSaving(false), 500);
+      await actions.updateSettings(localSettings);
+      alert("Settings Saved");
   };
 
-  const handleResetDefaults = async () => {
-    if (window.confirm("WARNING: This will revert marquee and logo settings to factory defaults. Proceed?")) {
-        await actions.resetSettings();
-    }
-  }
-
-  const handleClearPlaylist = async () => {
-      if (window.confirm("CRITICAL WARNING: This will delete ALL media items from the playlist. This cannot be undone. Proceed?")) {
-          await actions.clearAllMedia();
-      }
-  }
-
   return (
-    <div className="h-screen bg-black text-green-500 font-mono p-6 overflow-auto selection:bg-green-900 selection:text-white">
-      <div className="max-w-5xl mx-auto border border-green-900/50 p-1 min-h-[90vh] shadow-[0_0_20px_rgba(0,255,0,0.15)]">
-        <div className="border border-green-900/50 h-full p-8 relative bg-black">
-          
-          {/* Header */}
-          <div className="flex justify-between items-end border-b border-green-800 pb-6 mb-8">
-            <div>
-              <h1 className="text-3xl font-black flex items-center gap-3">
-                <Terminal className="animate-pulse" /> ROOT_ACCESS
-              </h1>
-              <p className="text-green-800 text-xs mt-1">ID: {user?.uid} // SECURE CONNECTION</p>
-            </div>
-            <div className="text-right">
-               <button 
-                 onClick={onExit}
-                 className="mb-2 border border-green-800 px-2 py-1 text-[10px] hover:bg-green-900/30 transition-colors flex items-center gap-2 ml-auto"
-               >
-                  <span className="text-green-500">↪</span> EXIT_TERMINAL
-               </button>
-               <div className="text-xs text-green-800">SYSTEM STATUS</div>
-               <div className="text-xl font-bold">ONLINE</div>
-            </div>
-          </div>
-
-          {/* Global Settings */}
-          <div className="mb-12">
-            <h3 className="text-sm font-bold bg-green-900/20 inline-block px-2 py-1 mb-4 border-l-2 border-green-500">
-              {'>'} DISPLAY_CONFIG
-            </h3>
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="group">
-                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">MARQUEE_TEXT</label>
-                <input 
-                  type="text" 
-                  value={localSettings.marqueeText || ''}
-                  onChange={e => setLocalSettings(s => ({...s, marqueeText: e.target.value}))}
-                  className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all"
-                />
-              </div>
-              <div className="group">
-                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">LOGO_SOURCE_URI (PNG)</label>
-                <input 
-                  type="text" 
-                  value={localSettings.logoUrl || ''}
-                  onChange={e => setLocalSettings(s => ({...s, logoUrl: e.target.value}))}
-                  className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all"
-                  placeholder="https://..."
-                />
-              </div>
-              
-              {/* Audio Section - Expanded */}
-              <div className="group md:col-span-2">
-                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">BACKGROUND_AUDIO_URI_1 (MP3)</label>
-                <input 
-                  type="text" 
-                  value={localSettings.audioUrl || ''}
-                  onChange={e => setLocalSettings(s => ({...s, audioUrl: e.target.value}))}
-                  className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all mb-2"
-                  placeholder="https://..."
-                />
-                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">BACKGROUND_AUDIO_URI_2 (OPTIONAL)</label>
-                <input 
-                  type="text" 
-                  value={localSettings.audioUrl2 || ''}
-                  onChange={e => setLocalSettings(s => ({...s, audioUrl2: e.target.value}))}
-                  className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all mb-2"
-                  placeholder="https://..."
-                />
-                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">BACKGROUND_AUDIO_URI_3 (OPTIONAL)</label>
-                <input 
-                  type="text" 
-                  value={localSettings.audioUrl3 || ''}
-                  onChange={e => setLocalSettings(s => ({...s, audioUrl3: e.target.value}))}
-                  className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all"
-                  placeholder="https://..."
-                />
-              </div>
-
-            </div>
-            <div className="flex justify-end mt-4 gap-4">
-               <button 
-                onClick={handleResetDefaults}
-                className="bg-red-900/10 border border-red-900/50 text-red-500 px-6 py-2 text-xs font-bold hover:bg-red-900/30 transition-all uppercase tracking-widest flex items-center gap-2"
-              >
-                <RotateCcw size={12} /> RESET_DEFAULTS
-              </button>
-              <button 
-                onClick={handleSaveSettings}
-                className="bg-green-900/20 border border-green-600 text-green-500 px-6 py-2 text-xs font-bold hover:bg-green-500 hover:text-black transition-all uppercase tracking-widest"
-              >
-                {isSaving ? 'EXECUTING...' : 'COMMIT_CHANGES'}
-              </button>
-            </div>
-          </div>
-
-          {/* Media Controls */}
+    <div className="min-h-screen bg-zinc-900 text-zinc-200 font-mono p-4 md:p-8 overflow-y-auto">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-700">
           <div>
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-bold bg-green-900/20 inline-block px-2 py-1 border-l-2 border-green-500">
-                {'>'} PLAYLIST_SEQUENCE
-                </h3>
-                <button 
-                    onClick={handleClearPlaylist}
-                    className="text-[10px] text-red-500 border border-red-900/50 px-3 py-1 hover:bg-red-900/20 transition-colors flex items-center gap-2"
-                >
-                    <Trash2 size={10} /> PURGE_DATABASE
-                </button>
-            </div>
-
-            {/* Input Line */}
-            <form onSubmit={handleAddMedia} className="flex flex-col md:flex-row gap-0 border border-green-800 mb-8">
-               <select 
-                value={newMediaType} 
-                onChange={e => setNewMediaType(e.target.value as MediaType)}
-                className="bg-green-950/30 text-green-400 border-r border-green-800 px-4 py-3 text-sm focus:outline-none appearance-none"
-              >
-                <option value="image">TYPE: IMG (JPG/PNG)</option>
-                <option value="video">TYPE: MP4 (VIDEO)</option>
-                <option value="gif">TYPE: GIF (LOOP)</option>
-                <option value="audio">TYPE: AUDIO (WAV/MP3)</option>
-              </select>
-              <input 
-                type="text" 
-                placeholder="ENTER_RESOURCE_URL..." 
-                value={newMediaUrl}
-                onChange={e => setNewMediaUrl(e.target.value)}
-                className="flex-1 bg-black text-green-500 px-4 py-3 text-sm focus:outline-none placeholder-green-900"
-              />
-              {(newMediaType === 'image' || newMediaType === 'gif') && (
-                 <input 
-                 type="number" 
-                 placeholder="SEC" 
-                 value={newMediaDuration}
-                 onChange={e => setNewMediaDuration(Number(e.target.value))}
-                 className="w-20 bg-black border-l border-green-800 px-4 py-3 text-sm focus:outline-none text-center"
-               />
-              )}
-              <button type="submit" className="bg-green-800 text-black px-6 font-bold hover:bg-green-600 transition-colors">
-                <Plus size={16} />
-              </button>
-            </form>
-
-            {/* Terminal List */}
-            <div className="space-y-2 font-mono text-xs">
-              <div className="flex text-green-900 border-b border-green-900/50 pb-2 px-3 uppercase tracking-wider font-bold">
-                <span className="w-12">IDX</span>
-                <span className="flex-1">RESOURCE_IDENTIFIER</span>
-                <span className="w-24">TYPE</span>
-                <span className="w-28 text-right">ACTIONS</span>
-              </div>
-              {media.map((item, idx) => (
-                <div key={item.id} className="flex items-center border border-transparent hover:border-green-500/30 hover:bg-green-900/20 p-3 rounded-sm group transition-all duration-200">
-                  <span className="w-12 text-green-700 font-bold group-hover:text-green-500 transition-colors">[{String(idx).padStart(2, '0')}]</span>
-                  <span className="flex-1 truncate pr-4 text-green-400 group-hover:text-green-200 transition-colors font-medium">{item.url}</span>
-                  <span className="w-24 text-green-700 uppercase text-[10px] tracking-wider group-hover:text-green-400 transition-colors">
-                    <span className="bg-green-900/20 px-1 py-0.5 rounded border border-green-900/50 group-hover:border-green-500/50">
-                      {item.type} {(item.type === 'image' || item.type === 'gif') && `(${item.duration}s)`}
-                    </span>
-                  </span>
-                  <div className="w-28 flex justify-end items-center gap-3 opacity-40 group-hover:opacity-100 transition-opacity">
-                    <div className="flex gap-1">
-                        <button onClick={() => actions.reorderMedia(idx, 'up')} className="p-1 hover:bg-green-500 hover:text-black rounded transition-colors" title="Move Up"><MoveUp size={12} /></button>
-                        <button onClick={() => actions.reorderMedia(idx, 'down')} className="p-1 hover:bg-green-500 hover:text-black rounded transition-colors" title="Move Down"><MoveDown size={12} /></button>
-                    </div>
-                    <button onClick={() => actions.deleteMedia(item.id)} className="p-1 text-red-500 hover:bg-red-500 hover:text-black rounded transition-colors ml-2" title="Delete"><Trash2 size={12} /></button>
-                  </div>
-                </div>
-              ))}
-              {media.length === 0 && (
-                  <div className="text-center py-12 text-green-900/50 italic border-2 border-dashed border-green-900/20 rounded-lg">
-                      // DATABASE_EMPTY :: AWAITING_INPUT
-                  </div>
-              )}
-            </div>
+            <h1 className="text-2xl font-bold text-green-500 flex items-center gap-2"><Terminal size={24}/> CES CONTROL DECK</h1>
+            <div className="text-xs text-zinc-500 mt-1">USER: {user?.uid || 'GHOST'} // MODE: ADMIN</div>
           </div>
-
+          <button onClick={onExit} className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-sm rounded flex items-center gap-2">
+            <Monitor size={16} /> EXIT TO DISPLAY
+          </button>
         </div>
-      </div>
-    </div>
-  );
-};
 
-const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
-  const [phase, setPhase] = useState(0); 
-  const [logs, setLogs] = useState<string[]>([]);
+        <div className="flex gap-4 mb-6">
+           <button 
+             onClick={() => setActiveTab('media')}
+             className={`px-4 py-2 rounded ${activeTab === 'media' ? 'bg-green-600 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+           >
+             MEDIA PLAYLIST
+           </button>
+           <button 
+             onClick={() => setActiveTab('settings')}
+             className={`px-4 py-2 rounded ${activeTab === 'settings' ? 'bg-green-600 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+           >
+             GLOBAL SETTINGS
+           </button>
+        </div>
 
-  useEffect(() => {
-    if (phase !== 0) return;
-    const sysLogs = [
-      "INITIALIZING KERNEL...",
-      "LOADING DRIVERS: GPU_RTX_9090 :: OK",
-      "MEM_CHECK: 128TB_QUANTUM :: OK",
-      "NEURAL_LINK: ESTABLISHED",
-      "BYPASSING FIREWALL...",
-      "DECRYPTING ASSETS...",
-      "MOUNTING HOLO_VOL_1...",
-      "CONNECTING TO GRID...",
-      "UPLINK: SECURE",
-    ];
-    let count = 0;
-    const interval = setInterval(() => {
-      if (count >= 15) {
-        clearInterval(interval);
-        setPhase(1);
-        return;
-      }
-      const randomHex = `0x${Math.floor(Math.random()*16777215).toString(16).toUpperCase()}`;
-      const msg = count < sysLogs.length ? sysLogs[count] : `LOADING_MODULE_${randomHex} :: OK`;
-      setLogs(prev => [...prev.slice(-12), `> ${msg}`]); 
-      count++;
-    }, 100); // 1.5s total
-    return () => clearInterval(interval);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase === 1) {
-      // Automatically complete after logo reveal, suppressing the "Access Granted" / Click button page
-      const timer = setTimeout(onComplete, 2500); 
-      return () => clearTimeout(timer);
-    }
-  }, [phase, onComplete]);
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black text-cyber-green font-mono flex flex-col items-center justify-center overflow-hidden">
-      <GlitchOverlay />
-      {phase === 0 && (
-        <div className="w-full max-w-2xl p-8 font-mono text-sm md:text-base">
-           {logs.map((line, i) => (
-             <div key={i} className="opacity-80 animate-pulse-fast border-l-2 border-cyber-green/50 pl-2 mb-1">
-               {line}
+        {activeTab === 'media' && (
+          <div className="grid md:grid-cols-3 gap-8">
+             {/* Add Form */}
+             <div className="md:col-span-1">
+                <div className="bg-zinc-800 p-6 rounded-lg border border-zinc-700 sticky top-4">
+                   <h3 className="text-green-400 font-bold mb-4 flex items-center gap-2">
+                     <span className="animate-pulse">{'>'}</span> 
+                     <Plus size={16}/> ADD ARTIFACT
+                   </h3>
+                   <form onSubmit={handleAdd} className="space-y-4">
+                      <div>
+                        <label className="block text-xs text-zinc-500 mb-1">MEDIA URL</label>
+                        <input 
+                          type="text" 
+                          value={newUrl}
+                          onChange={e => setNewUrl(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-700 p-2 text-sm rounded focus:border-green-500 focus:outline-none"
+                          placeholder="https://..."
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs text-zinc-500 mb-1">TYPE</label>
+                          <select 
+                            value={newType}
+                            onChange={e => setNewType(e.target.value as MediaType)}
+                            className="w-full bg-zinc-900 border border-zinc-700 p-2 text-sm rounded focus:border-green-500 focus:outline-none"
+                          >
+                            <option value="image">IMAGE</option>
+                            <option value="video">VIDEO</option>
+                            <option value="gif">GIF</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-zinc-500 mb-1">DURATION (S)</label>
+                          <input 
+                            type="number" 
+                            value={newDuration}
+                            onChange={e => setNewDuration(Number(e.target.value))}
+                            className="w-full bg-zinc-900 border border-zinc-700 p-2 text-sm rounded focus:border-green-500 focus:outline-none"
+                            min={1}
+                          />
+                        </div>
+                      </div>
+                      <button type="submit" className="w-full bg-green-600 text-black font-bold py-2 rounded hover:bg-green-500 transition-colors">
+                        ADD TO QUEUE
+                      </button>
+                   </form>
+                </div>
              </div>
-           ))}
-           <div className="animate-pulse bg-cyber-green w-4 h-6 mt-2 inline-block" />
-        </div>
-      )}
-      {phase === 1 && (
-        <div className="relative animate-glitch-1">
-           <h1 className="text-6xl md:text-9xl font-black font-display tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-cyber-green drop-shadow-[0_0_30px_rgba(0,255,65,0.8)] animate-text-glitch">
-             CES 2026
-           </h1>
-           <div className="text-center text-cyber-green/80 text-xl tracking-[1em] mt-4 font-mono animate-pulse">
-             HOLO-DECK
+
+             {/* List */}
+             <div className="md:col-span-2 space-y-2">
+                <div className="flex justify-between items-center mb-2 text-xs text-zinc-500 px-2">
+                  <span>QUEUE ORDER ({media.length})</span>
+                  <button onClick={actions.clearAllMedia} className="text-red-500 hover:underline flex items-center gap-1"><Trash2 size={12}/> CLEAR ALL</button>
+                </div>
+                {media.map((item, idx) => (
+                  <div key={item.id} className="bg-zinc-800/50 border border-zinc-700 p-3 rounded flex items-center gap-4 group hover:border-green-500 hover:bg-zinc-800 transition-all duration-200 hover:shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+                     <div className="text-zinc-600 font-bold text-lg w-8 text-center group-hover:text-green-500 transition-colors">{idx + 1}</div>
+                     <div className="w-16 h-10 bg-black rounded overflow-hidden shrink-0 relative group/thumb">
+                        {item.type === 'video' ? (
+                          <div className="w-full h-full flex items-center justify-center text-zinc-500"><Film size={16}/></div>
+                        ) : (
+                          <img src={item.url} alt="thumb" className="w-full h-full object-cover" />
+                        )}
+                        {/* Hover Preview */}
+                        {(item.type === 'image' || item.type === 'gif') && (
+                           <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 h-auto z-50 hidden group-hover/thumb:block border-2 border-green-500 bg-black shadow-xl rounded overflow-hidden pointer-events-none">
+                               <img src={item.url} alt="preview" className="w-full h-auto" />
+                           </div>
+                        )}
+                     </div>
+                     <div className="flex-1 min-w-0">
+                        <div className="truncate text-sm text-zinc-300 group-hover:text-white transition-colors">{item.url}</div>
+                        <div className="flex items-center gap-2 text-[10px] text-zinc-500 uppercase mt-1">
+                          <span className="bg-zinc-900 px-1 rounded text-green-600/70 border border-green-900/30">{item.type}</span>
+                          <span>{item.duration}s</span>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => actions.reorderMedia(idx, 'up')} disabled={idx === 0} className="p-1 hover:text-green-400 disabled:opacity-20 transition-colors"><MoveUp size={16}/></button>
+                        <button onClick={() => actions.reorderMedia(idx, 'down')} disabled={idx === media.length-1} className="p-1 hover:text-green-400 disabled:opacity-20 transition-colors"><MoveDown size={16}/></button>
+                        <button onClick={() => actions.deleteMedia(item.id)} className="p-1 hover:text-red-500 ml-2 transition-colors"><Trash2 size={16}/></button>
+                     </div>
+                  </div>
+                ))}
+                {media.length === 0 && (
+                  <div className="text-center py-12 text-zinc-600 italic">
+                    Playlist is empty. Add artifacts to begin.
+                  </div>
+                )}
+             </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+           <div className="max-w-2xl">
+             <div className="bg-zinc-800 p-6 rounded-lg border border-zinc-700 space-y-6">
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">MARQUEE TEXT</label>
+                  <input 
+                    type="text" 
+                    value={localSettings.marqueeText}
+                    onChange={e => setLocalSettings({...localSettings, marqueeText: e.target.value})}
+                    className="w-full bg-zinc-900 border border-zinc-700 p-2 text-sm rounded focus:border-green-500 focus:outline-none font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">LOGO URL</label>
+                  <input 
+                    type="text" 
+                    value={localSettings.logoUrl}
+                    onChange={e => setLocalSettings({...localSettings, logoUrl: e.target.value})}
+                    className="w-full bg-zinc-900 border border-zinc-700 p-2 text-sm rounded focus:border-green-500 focus:outline-none"
+                  />
+                </div>
+                
+                <div className="pt-4 border-t border-zinc-700">
+                   <h4 className="text-sm font-bold text-green-500 mb-4 flex items-center gap-2"><Disc size={16}/> AUDIO CHANNELS</h4>
+                   <div className="space-y-4">
+                      {[1, 2, 3].map((num) => {
+                         const key = num === 1 ? 'audioUrl' : `audioUrl${num}`;
+                         return (
+                            <div key={num}>
+                              <label className="block text-xs text-zinc-500 mb-1">CHANNEL {num} URL</label>
+                              <input 
+                                type="text" 
+                                value={(localSettings as any)[key] || ''}
+                                onChange={e => setLocalSettings({...localSettings, [key]: e.target.value})}
+                                className="w-full bg-zinc-900 border border-zinc-700 p-2 text-sm rounded focus:border-green-500 focus:outline-none"
+                                placeholder="https://... (mp3)"
+                              />
+                            </div>
+                         );
+                      })}
+                   </div>
+                </div>
+
+                <div className="pt-4 flex gap-4">
+                  <button onClick={handleSaveSettings} className="px-6 py-2 bg-green-600 text-black font-bold rounded hover:bg-green-500">
+                    SAVE CONFIG
+                  </button>
+                  <button onClick={actions.resetSettings} className="px-6 py-2 bg-zinc-700 text-zinc-300 font-bold rounded hover:bg-zinc-600">
+                    RESET DEFAULTS
+                  </button>
+                </div>
+             </div>
            </div>
-        </div>
-      )}
-      <div className="absolute inset-0 z-40 pointer-events-none bg-[linear-gradient(rgba(0,20,0,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(0,255,0,0.03),rgba(0,255,0,0.01),rgba(0,255,0,0.03))] bg-[length:100%_4px,3px_100%] animate-scanlines" />
+        )}
+
+      </div>
     </div>
   );
 };
