@@ -491,14 +491,16 @@ const TelemetrySidebar = ({
   isShuffle,
   toggleShuffle,
   hasAudio, 
-  nextItem 
+  nextItem,
+  onNext
 }: { 
   isMuted: boolean, 
   toggleMute: () => void, 
   isShuffle: boolean, 
   toggleShuffle: () => void, 
   hasAudio: boolean, 
-  nextItem?: MediaItem 
+  nextItem?: MediaItem,
+  onNext: () => void
 }) => {
   const [stats, setStats] = useState({ fps: 60, temp: 45, load: 12 });
 
@@ -569,10 +571,14 @@ const TelemetrySidebar = ({
         </div>
       </button>
 
-      {/* UP NEXT THUMBNAIL */}
+      {/* UP NEXT THUMBNAIL - CLICKABLE */}
       <div className="mt-4 border-t border-green-900/50 pt-2 flex flex-col gap-1 hidden md:flex">
         <div className="text-[8px] text-green-500 tracking-widest uppercase animate-pulse">UP NEXT</div>
-        <div className="w-24 h-16 bg-green-900/10 border border-green-500/30 overflow-hidden relative group hover-depth transition-transform duration-300 hover:border-green-400 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+        <button 
+          onClick={onNext}
+          className="w-24 h-16 bg-green-900/10 border border-green-500/30 overflow-hidden relative group hover-depth transition-all duration-300 hover:border-green-400 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
+          title="Click to skip to next media"
+        >
            {nextItem ? (
              <>
                {/* Preview Content */}
@@ -584,6 +590,11 @@ const TelemetrySidebar = ({
                  </div>
                )}
                
+               {/* Skip Icon Overlay on Hover */}
+               <div className="absolute inset-0 bg-green-500/0 group-hover:bg-green-500/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all pointer-events-none">
+                 <SkipForward size={24} className="text-green-400 drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
+               </div>
+               
                {/* Type Badge */}
                <div className="absolute bottom-0 right-0 bg-green-900/80 text-[8px] text-green-400 px-1 font-bold border-tl border-green-500/50">
                  {nextItem.type.toUpperCase()}
@@ -594,7 +605,7 @@ const TelemetrySidebar = ({
                <Repeat size={16} />
              </div>
            )}
-        </div>
+        </button>
       </div>
       
       <div className="mt-auto text-[8px] text-green-800 leading-tight overflow-hidden h-20 flex flex-col-reverse font-mono pointer-events-none hidden md:flex">
@@ -1469,6 +1480,7 @@ export default function App() {
                     toggleShuffle={() => setIsShuffle(!isShuffle)}
                     hasAudio={audioUrls.length > 0}
                     nextItem={media.length > 1 ? media[(currentIndex + 1) % media.length] : undefined}
+                    onNext={handleNext}
                   />
                   
                   {/* Confined Media Player */}

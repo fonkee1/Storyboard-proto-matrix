@@ -76,6 +76,8 @@ npm run preview
   - ✅ Centered robot head icon between countdown and location
   - ✅ Added swipe gesture support (swipe left to advance media)
   - ✅ Added keyboard navigation (Arrow Right or Space to advance)
+  - ✅ **Fixed media carousel timing bugs** - removed fade transitions, timer now starts after media loads
+  - ✅ **Made "UP NEXT" thumbnail clickable** - click to skip to next media, autoplay continues
   - ✅ Created SECURITY_AND_OPTIMIZATION.md guide
   - ✅ Created INTERACTIVE_EFFECTS_RECOMMENDATIONS.md with 10 effect ideas
   - Changed dev server port from 3000 to 5000
