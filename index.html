@@ -155,6 +155,89 @@
       .hover-depth:hover {
         transform: translateZ(20px);
       }
+
+      /* Dynamic Color Classes using CSS Variables */
+      .text-primary { color: var(--primary-color); }
+      .text-primary-bright { color: var(--primary-bright); }
+      .text-primary-dim { color: var(--primary-dim); }
+      .bg-primary-dark { background-color: var(--primary-dark); }
+      .border-primary { border-color: var(--primary-color); }
+      .border-primary-dim { border-color: var(--primary-color, rgba(0,0,0,0.3)); opacity: 0.3; }
+      .shadow-primary { box-shadow: 0 0 20px var(--primary-color); }
+      .hover-primary:hover { background-color: var(--primary-dark); border-color: var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
+      
+      /* Apply to text-glitch animation */
+      .animate-text-glitch {
+        animation: text-glitch 3s infinite linear alternate-reverse;
+      }
+
+      /* PINK SKIN COLOR OVERRIDES - Map all green colors to pink */
+      body.skin-pink .text-green-50 { color: #fff0f6; }
+      body.skin-pink .text-green-100 { color: #ffe0ef; }
+      body.skin-pink .text-green-200 { color: #ffc2e0; }
+      body.skin-pink .text-green-300 { color: #ff85cc; }
+      body.skin-pink .text-green-400 { color: #ff4db8; }
+      body.skin-pink .text-green-500 { color: #ff006e; }
+      body.skin-pink .text-green-600 { color: #e6005c; }
+      body.skin-pink .text-green-700 { color: #cc004a; }
+      body.skin-pink .text-green-800 { color: #b30040; }
+      body.skin-pink .text-green-900 { color: #800030; }
+
+      body.skin-pink .bg-green-50 { background-color: #fff0f6; }
+      body.skin-pink .bg-green-100 { background-color: #ffe0ef; }
+      body.skin-pink .bg-green-200 { background-color: #ffc2e0; }
+      body.skin-pink .bg-green-300 { background-color: #ff85cc; }
+      body.skin-pink .bg-green-400 { background-color: #ff4db8; }
+      body.skin-pink .bg-green-500 { background-color: #ff006e; }
+      body.skin-pink .bg-green-600 { background-color: #e6005c; }
+      body.skin-pink .bg-green-700 { background-color: #cc004a; }
+      body.skin-pink .bg-green-800 { background-color: #b30040; }
+      body.skin-pink .bg-green-900 { background-color: #800030; }
+
+      body.skin-pink .border-green-50 { border-color: #fff0f6; }
+      body.skin-pink .border-green-100 { border-color: #ffe0ef; }
+      body.skin-pink .border-green-200 { border-color: #ffc2e0; }
+      body.skin-pink .border-green-300 { border-color: #ff85cc; }
+      body.skin-pink .border-green-400 { border-color: #ff4db8; }
+      body.skin-pink .border-green-500 { border-color: #ff006e; }
+      body.skin-pink .border-green-600 { border-color: #e6005c; }
+      body.skin-pink .border-green-700 { border-color: #cc004a; }
+      body.skin-pink .border-green-800 { border-color: #b30040; }
+      body.skin-pink .border-green-900 { border-color: #800030; }
+
+      body.skin-pink .from-green-300 { --tw-gradient-from: #ff85cc; }
+      body.skin-pink .to-green-800 { --tw-gradient-to: #b30040; }
+      body.skin-pink .from-green-500 { --tw-gradient-from: #ff006e; }
+      body.skin-pink .to-white { --tw-gradient-to: #fff0f6; }
+      
+      body.skin-pink .shadow-\[0_0_20px_rgba\(34\,197\,94\,0\.4\)\] { 
+        box-shadow: 0 0 20px rgba(255, 0, 110, 0.4);
+      }
+      body.skin-pink .shadow-\[0_0_40px_rgba\(34\,197\,94\,0\.6\)\] { 
+        box-shadow: 0 0 40px rgba(255, 0, 110, 0.6);
+      }
+      body.skin-pink .shadow-\[0_0_10px_rgba\(34\,197\,94\,0\.2\)\] { 
+        box-shadow: 0 0 10px rgba(255, 0, 110, 0.2);
+      }
+      body.skin-pink .shadow-\[0_0_15px_rgba\(34\,197\,94\,0\.3\)\] { 
+        box-shadow: 0 0 15px rgba(255, 0, 110, 0.3);
+      }
+      body.skin-pink .shadow-\[0_0_20px_rgba\(34\,197\,94\,0\.1\)\] { 
+        box-shadow: 0 0 20px rgba(255, 0, 110, 0.1);
+      }
+      body.skin-pink .hover\:shadow-\[0_0_10px_rgba\(34\,197\,94\,0\.2\)\]\:hover { 
+        box-shadow: 0 0 10px rgba(255, 0, 110, 0.2);
+      }
+      body.skin-pink .drop-shadow-\[0_0_10px_rgba\(34\,197\,94\,0\.8\)\] { 
+        filter: drop-shadow(0 0 10px rgba(255, 0, 110, 0.8));
+      }
+      
+      body.skin-pink .inset-\[0_0_50px_rgba\(0\,255\,65\,0\.1\)\] {
+        box-shadow: inset 0 0 50px rgba(255, 0, 110, 0.1);
+      }
+      body.skin-pink .inset-\[0_0_120px_rgba\(0\,255\,65\,0\.4\)\] {
+        box-shadow: inset 0 0 120px rgba(255, 0, 110, 0.4);
+      }
     </style>
   <script type="importmap">
 {
