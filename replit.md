@@ -68,7 +68,22 @@ npm run build
 npm run preview
 ```
 
+## Production Configuration
+- **Dual-mode system**: Development uses localStorage (editable), Production uses production-config.json (locked-in)
+- **Environment detection**: Automatically switches based on domain (.replit.dev = dev, .replit.app = prod)
+- **Deployment**: Static hosting via `npm run build` → `dist/` directory
+- **URL Management**: Edit `production-config.json` to update production media/settings, then redeploy
+
 ## Recent Changes
+- **2025-11-21**: Production deployment system and environment-aware configuration
+  - ✅ Created production-config.json with locked-in media URLs and settings
+  - ✅ Implemented dual-mode system (dev=localStorage, prod=config file)
+  - ✅ Added environment detection for automatic mode switching
+  - ✅ Configured static deployment (build → dist/)
+  - ✅ Fixed audio playlist looping bug (tracks now play continuously)
+  - ✅ Production URLs locked in for deployment at matrix-ces-display-c-0-de-b0untyf3tt.replit.app
+  - ✅ Created PRODUCTION_DEPLOYMENT.md guide
+
 - **2025-11-21**: Enhanced interactivity, theming, and user experience
   - ✅ Implemented password-protected admin access (password: "b0untyf3ttYO!")
   - ✅ Added SKIN toggle button with dual color schemes (Matrix GREEN / HOT NEON PINK)
