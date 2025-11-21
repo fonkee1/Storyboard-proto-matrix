@@ -428,10 +428,10 @@ const BackgroundAudio = ({
          audioRef.current.crossOrigin = "anonymous";
          audioRef.current.loop = false; // Handle looping manually via onEnded for playlists
          audioRef.current.autoplay = true;
-         
-         // Attach end listener
-         audioRef.current.addEventListener('ended', handleEnded);
        }
+       
+       // Always attach/reattach the ended listener (critical for playlist loop)
+       audioRef.current.addEventListener('ended', handleEnded);
        
        // Only update src if changed to avoid reload
        if (audioRef.current.src !== currentUrl) {
