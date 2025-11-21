@@ -669,14 +669,18 @@ const FullWidthVisualizer = ({ analyser }: { analyser: AnalyserNode | null }) =>
       animId = requestAnimationFrame(draw);
       analyser.getByteTimeDomainData(dataArray);
 
+      // Check for pink skin
+      const isPink = document.body.classList.contains('skin-pink');
+      const waveColor = isPink ? '#ff006e' : '#00ff41';
+
       // Trail effect
       ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#00ff41';
+      ctx.strokeStyle = waveColor;
       ctx.shadowBlur = 4;
-      ctx.shadowColor = '#00ff41';
+      ctx.shadowColor = waveColor;
       ctx.beginPath();
 
       const sliceWidth = canvas.width * 1.0 / bufferLength;
