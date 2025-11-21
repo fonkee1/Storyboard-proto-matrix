@@ -49,6 +49,9 @@ import {
   TouchpadOff
 } from 'lucide-react';
 
+// Import production config
+import productionConfig from './production-config.json';
+
 // --- TYPE DECLARATIONS ---
 declare global {
   interface Window {
@@ -94,6 +97,15 @@ if (isFirebaseConfigured) {
 
 const appId = typeof window !== 'undefined' && window.__app_id ? window.__app_id : 'ces-2026-demo';
 const FALLBACK_URL = "https://dummyimage.com/1920x1080/000/00ff41.png&text=SIGNAL+LOST";
+
+// Detect production environment
+const isProduction = () => {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  // Production domains: replit.app, repl.co, or custom domains (not localhost or replit.dev)
+  return hostname.includes('replit.app') || hostname.includes('repl.co') || 
+         (!hostname.includes('localhost') && !hostname.includes('replit.dev'));
+};
 
 // --- HOOKS ---
 const useAuth = () => {
@@ -147,6 +159,36 @@ const useCESData = (user: any) => {
   const LS_SETTINGS_KEY = `ces_settings_${appId}`;
 
   const loadLocalData = () => {
+    // In production, load from bundled config file (locked-in URLs)
+    if (isProduction()) {
+      console.log('🚀 Production mode: Loading from production-config.json');
+      
+      // Load media with proper IDs and order
+      const prodMedia = productionConfig.media.map((item, index) => ({
+        id: `prod-${index}`,
+        url: item.url,
+        type: item.type as MediaType,
+        duration: item.duration,
+        order: index
+      }));
+      
+      // Load settings with audio channels
+      const prodSettings: AppSettings = {
+        marqueeText: productionConfig.settings.marqueeText,
+        logoUrl: productionConfig.settings.logoUrl,
+        audioUrl: productionConfig.settings.audioChannels[0] || '',
+        audioUrl2: productionConfig.settings.audioChannels[1] || '',
+        audioUrl3: productionConfig.settings.audioChannels[2] || ''
+      };
+      
+      setMedia(prodMedia);
+      setSettings(prodSettings);
+      setLoading(false);
+      return;
+    }
+    
+    // In development, load from localStorage (editable via admin panel)
+    console.log('🔧 Development mode: Loading from localStorage');
     const savedMedia = localStorage.getItem(LS_MEDIA_KEY);
     const savedSettings = localStorage.getItem(LS_SETTINGS_KEY);
     if (savedMedia) setMedia(JSON.parse(savedMedia));
