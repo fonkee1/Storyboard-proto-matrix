@@ -128,7 +128,7 @@ const useAuth = () => {
           await signInAnonymously(auth);
         }
       } catch (e) {
-        console.warn("Auth failed, falling back to offline mode", e);
+        if (import.meta.env.DEV) console.warn("Auth failed, falling back to offline mode", e);
         setUser({ uid: 'offline-fallback' });
       }
     };
@@ -224,7 +224,7 @@ const useCESData = (user: any) => {
       setMedia(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as MediaItem)));
       setLoading(false);
     }, (err) => {
-      console.warn("Firestore media connect failed, using local", err);
+      if (import.meta.env.DEV) console.warn("Firestore media connect failed, using local", err);
       loadLocalData();
     });
 
@@ -233,7 +233,9 @@ const useCESData = (user: any) => {
       if (docSnap.exists()) {
         setSettings(prev => ({ ...prev, ...docSnap.data() } as AppSettings));
       }
-    }, (err) => console.warn("Firestore settings connect failed", err));
+    }, (err) => {
+      if (import.meta.env.DEV) console.warn("Firestore settings connect failed", err);
+    });
 
     return () => {
       unsubMedia();
@@ -257,7 +259,9 @@ const useCESData = (user: any) => {
             createdAt: serverTimestamp()
           });
           return;
-        } catch (e) { console.error("Firestore add failed", e); }
+        } catch (e) { 
+          if (import.meta.env.DEV) console.error("Firestore add failed", e); 
+        }
       }
       // Fallback
       const itemWithId = { ...newItem, id: `local_${Date.now()}` };
@@ -269,7 +273,9 @@ const useCESData = (user: any) => {
         try {
           await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), newSettings, { merge: true });
           return;
-        } catch (e) { console.error("Firestore settings save failed", e); }
+        } catch (e) { 
+          if (import.meta.env.DEV) console.error("Firestore settings save failed", e); 
+        }
       }
       saveLocalSettings(newSettings);
     },
@@ -1209,7 +1215,7 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
             }}
             onCanPlay={handleVideoCanPlay}
             onError={(e) => {
-              console.error("Video load error:", e);
+              if (import.meta.env.DEV) console.error("Video load error:", e);
               // Advance to next if video fails (use safeAdvance to prevent double-trigger)
               setTimeout(() => safeAdvance(), 1000);
             }}
