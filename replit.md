@@ -15,11 +15,13 @@ High-fidelity digital signage display with cyberpunk holographic interface. This
 ### Key Features
 - Holographic cyberpunk UI with glitch effects and scanlines
 - Media carousel supporting images, videos, audio, and GIFs
-- Admin panel for managing media and settings
+- Password-protected admin panel (password: "b0untyf3ttYO!")
+- Dual color scheme toggle (Matrix GREEN / HOT NEON PINK)
 - Audio visualizer with background music support
 - Shuffle and sequential playback modes
+- Interactive navigation (swipe, keyboard, mouse wheel)
+- Direct-to-display loading (no blocking intro screen)
 - Works offline with localStorage when Firebase is not configured
-- Touch and mouse wheel controls for zoom
 
 ### File Structure
 ```
@@ -65,7 +67,12 @@ npm run preview
 ```
 
 ## Recent Changes
-- **2025-11-21**: Enhanced interactivity and documentation
+- **2025-11-21**: Enhanced interactivity, theming, and user experience
+  - ✅ Implemented password-protected admin access (password: "b0untyf3ttYO!")
+  - ✅ Added SKIN toggle button with dual color schemes (Matrix GREEN / HOT NEON PINK)
+  - ✅ Converted intro sequence to optional popup overlay (auto-dismisses, non-blocking)
+  - ✅ App now loads directly to main display without requiring click-to-enter
+  - ✅ CSS color mapping system for instant theme transformation
   - ✅ Centered robot head icon between countdown and location
   - ✅ Added swipe gesture support (swipe left to advance media)
   - ✅ Added keyboard navigation (Arrow Right or Space to advance)
