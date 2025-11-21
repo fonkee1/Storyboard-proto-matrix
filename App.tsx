@@ -1107,52 +1107,53 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
     }
   }, [item, safeAdvance]);
 
-  // Start timer when video is ready and play it
-  const handleVideoReady = useCallback(() => {
+  // Ensure video is muted and try to play when ready
+  const handleVideoCanPlay = useCallback(() => {
     if (!item || item.type !== 'video' || !videoRef.current || hasAdvancedRef.current) return;
     
     const video = videoRef.current;
     
-    // Clear any existing timer first (prevent race conditions)
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    
-    // Ensure video is muted and volume is 0
+    // Ensure video is muted and volume is 0 (belt and suspenders)
     video.muted = true;
     video.volume = 0;
     
-    // Reset and play
-    video.currentTime = 0;
+    // Try to play (autoPlay might be blocked)
     const playPromise = video.play();
-    
     if (playPromise !== undefined) {
-      playPromise.catch(e => {
-        console.warn("Video autoplay failed:", e);
-        // Fallback: advance after duration even if video doesn't play
-        const duration = (item.duration || 10) * 1000;
-        timerRef.current = setTimeout(() => {
-          safeAdvance();
-        }, duration);
+      playPromise.catch((e) => {
+        console.log("Video autoplay blocked, will play on user interaction");
+        // Video will start on first click/touch
       });
     }
     
-    // Fallback safety timer: advance even if onEnded doesn't fire
-    // Use video duration if available, else use item.duration
-    const getDuration = () => {
-      if (video.duration && !isNaN(video.duration) && isFinite(video.duration)) {
-        return video.duration * 1000;
-      }
-      return (item.duration || 10) * 1000;
-    };
-    
-    // Add 1000ms buffer to let onEnded fire first
-    timerRef.current = setTimeout(() => {
-      console.log("Video fallback timer triggered");
-      safeAdvance();
-    }, getDuration() + 1000);
+    // Set a fallback safety timer ONLY as last resort if onEnded never fires
+    // This should rarely trigger - it's just insurance against hanging
+    if (!timerRef.current && video.duration && !isNaN(video.duration) && isFinite(video.duration)) {
+      // Add significant buffer (3 seconds) to ensure onEnded fires first
+      const fallbackDuration = (video.duration * 1000) + 3000;
+      timerRef.current = setTimeout(() => {
+        console.warn("Video fallback timer triggered - onEnded did not fire");
+        safeAdvance();
+      }, fallbackDuration);
+    }
   }, [item, safeAdvance]);
+
+  // Unlock video playback on user interaction
+  useEffect(() => {
+    const unlockVideo = () => {
+      if (videoRef.current && videoRef.current.paused && item?.type === 'video') {
+        videoRef.current.play().catch(() => {});
+      }
+    };
+
+    window.addEventListener('click', unlockVideo, { once: true });
+    window.addEventListener('touchstart', unlockVideo, { once: true });
+
+    return () => {
+      window.removeEventListener('click', unlockVideo);
+      window.removeEventListener('touchstart', unlockVideo);
+    };
+  }, [item?.type]);
 
   // Preload next item
   useEffect(() => {
@@ -1196,6 +1197,7 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
             src={item.url}
             className="w-full h-full object-contain"
             muted
+            autoPlay
             playsInline
             loop={false}
             preload="auto"
@@ -1203,7 +1205,7 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
               console.log("Video ended naturally");
               safeAdvance();
             }}
-            onCanPlayThrough={handleVideoReady}
+            onCanPlay={handleVideoCanPlay}
             onError={(e) => {
               console.error("Video load error:", e);
               // Advance to next if video fails (use safeAdvance to prevent double-trigger)
