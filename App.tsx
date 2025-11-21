@@ -39,7 +39,13 @@ import {
   SkipForward,
   Bot,
   RotateCcw,
-  AudioWaveform
+  AudioWaveform,
+  Disc,
+  Image as ImageIcon,
+  Film,
+  FileAudio,
+  Repeat,
+  Shuffle
 } from 'lucide-react';
 
 // --- TYPE DECLARATIONS ---
@@ -66,6 +72,8 @@ interface AppSettings {
   marqueeText: string;
   logoUrl: string;
   audioUrl: string;
+  audioUrl2?: string;
+  audioUrl3?: string;
 }
 
 // --- CONFIG & INIT ---
@@ -127,7 +135,9 @@ const useCESData = (user: any) => {
   const [settings, setSettings] = useState<AppSettings>({
     marqueeText: 'PRESENTED BY BE UNIQUE EXHIBITS',
     logoUrl: '',
-    audioUrl: '' 
+    audioUrl: '',
+    audioUrl2: '',
+    audioUrl3: ''
   });
   const [loading, setLoading] = useState(true);
 
@@ -272,7 +282,9 @@ const useCESData = (user: any) => {
        const defaults = {
         marqueeText: 'PRESENTED BY BE UNIQUE EXHIBITS',
         logoUrl: '',
-        audioUrl: '' 
+        audioUrl: '',
+        audioUrl2: '',
+        audioUrl3: ''
       };
       actions.updateSettings(defaults);
     }
@@ -290,38 +302,107 @@ const GlitchOverlay = () => (
   </div>
 );
 
-const HoloFrame = ({ children }: { children?: React.ReactNode }) => (
-  <div className="relative w-full h-full overflow-hidden bg-black font-mono perspective-1000">
-    <GlitchOverlay />
-    <div className="absolute inset-0 z-20 pointer-events-none bg-[linear-gradient(rgba(0,20,0,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(0,255,0,0.03),rgba(0,255,0,0.01),rgba(0,255,0,0.03))] bg-[length:100%_4px,3px_100%] animate-scanlines" />
-    <div className="absolute inset-0 z-30 pointer-events-none animate-holo-pulse" />
-    <div className="absolute top-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e] z-40" />
-    <div className="absolute bottom-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e] z-40" />
-    <div className="w-full h-full preserve-3d">
-        {children}
-    </div>
-  </div>
-);
+const HoloFrame = ({ children, onInteract }: { children?: React.ReactNode, onInteract?: () => void }) => {
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-const BackgroundAudio = ({ url, isMuted, setAnalyser }: { url: string, isMuted: boolean, setAnalyser: (a: AnalyserNode | null) => void }) => {
+  const handleWheel = (e: React.WheelEvent) => {
+    // Zoom limits: 0.8x to 1.2x
+    const delta = -Math.sign(e.deltaY) * 0.05;
+    setScale(s => Math.min(Math.max(s + delta, 0.8), 1.2));
+  };
+
+  return (
+    <div 
+      ref={containerRef}
+      onWheel={handleWheel}
+      onTouchStart={onInteract}
+      className="relative w-full h-full overflow-hidden bg-black font-mono perspective-1000 cursor-crosshair"
+      style={{ touchAction: 'none' }} // Prevent mobile scroll interference
+    >
+      <GlitchOverlay />
+      <div className="absolute inset-0 z-20 pointer-events-none bg-[linear-gradient(rgba(0,20,0,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(0,255,0,0.03),rgba(0,255,0,0.01),rgba(0,255,0,0.03))] bg-[length:100%_4px,3px_100%] animate-scanlines" />
+      <div className="absolute inset-0 z-30 pointer-events-none animate-holo-pulse" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e] z-40" />
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e] z-40" />
+      <div 
+        className="w-full h-full preserve-3d transition-transform duration-200 ease-out will-change-transform"
+        style={{ transform: `rotateX(0deg) rotateY(0deg) scale(${scale})` }}
+      >
+          {children}
+      </div>
+    </div>
+  );
+};
+
+const BackgroundAudio = ({ 
+  urls, 
+  isMuted, 
+  isShuffle,
+  setAnalyser 
+}: { 
+  urls: string[], 
+  isMuted: boolean, 
+  isShuffle: boolean,
+  setAnalyser: (a: AnalyserNode | null) => void 
+}) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const contextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+
+  // Play Next Logic
+  const playNext = useCallback(() => {
+    if (urls.length === 0) return;
+    setCurrentTrackIndex(prev => {
+      if (isShuffle) {
+        // Random index
+        let next = Math.floor(Math.random() * urls.length);
+        // Avoid repeating the same track if possible, unless only 1 exists
+        if (urls.length > 1 && next === prev) {
+            next = (next + 1) % urls.length;
+        }
+        return next;
+      } else {
+        // Sequential
+        return (prev + 1) % urls.length;
+      }
+    });
+  }, [urls.length, isShuffle]);
+
+  // Reset index if urls change significantly (cleanup)
+  useEffect(() => {
+     if (currentTrackIndex >= urls.length) setCurrentTrackIndex(0);
+  }, [urls.length]);
+
+  const currentUrl = urls[currentTrackIndex];
 
   useEffect(() => {
-    if (!url) return;
+    if (!currentUrl) return;
     
     const initAudio = () => {
        if (!audioRef.current) {
          audioRef.current = new Audio();
          audioRef.current.crossOrigin = "anonymous";
-         audioRef.current.loop = true;
-         audioRef.current.autoplay = true; // Explicit autoplay
+         audioRef.current.loop = false; // Handle looping manually via onEnded for playlists
+         audioRef.current.autoplay = true;
+         
+         // Attach end listener
+         audioRef.current.addEventListener('ended', () => {
+            playNext();
+         });
        }
        
-       if (audioRef.current.src !== url) {
-         audioRef.current.src = url;
+       // Only update src if changed to avoid reload
+       if (audioRef.current.src !== currentUrl) {
+         audioRef.current.src = currentUrl;
+         audioRef.current.load();
+         if (!isMuted) {
+            const p = audioRef.current.play();
+            if (p) p.catch(e => console.warn("Autoplay blocked", e));
+         }
        }
 
        // Init Web Audio API
@@ -330,7 +411,7 @@ const BackgroundAudio = ({ url, isMuted, setAnalyser }: { url: string, isMuted: 
          if (AudioContextClass) {
             contextRef.current = new AudioContext();
             analyserRef.current = contextRef.current.createAnalyser();
-            analyserRef.current.fftSize = 256;
+            analyserRef.current.fftSize = 2048;
             
             try {
               sourceRef.current = contextRef.current.createMediaElementSource(audioRef.current);
@@ -338,7 +419,7 @@ const BackgroundAudio = ({ url, isMuted, setAnalyser }: { url: string, isMuted: 
               analyserRef.current.connect(contextRef.current.destination);
               setAnalyser(analyserRef.current);
             } catch (e) {
-              console.log("Audio Graph Error (likely CORS or already connected)", e);
+              console.log("Audio Graph Error", e);
             }
          }
        }
@@ -346,19 +427,15 @@ const BackgroundAudio = ({ url, isMuted, setAnalyser }: { url: string, isMuted: 
 
     initAudio();
 
-    // Interaction unlock handler for browsers blocking autoplay
     const unlock = () => {
       if (contextRef.current?.state === 'suspended') {
         contextRef.current.resume();
       }
-      if (audioRef.current && !isMuted) {
+      if (audioRef.current && !isMuted && audioRef.current.paused) {
         audioRef.current.play().catch((e) => console.warn("Auto-play blocked:", e));
       }
     };
     
-    // Try to unlock immediately if user interacted with intro
-    unlock();
-
     window.addEventListener('click', unlock);
     window.addEventListener('touchstart', unlock);
 
@@ -370,18 +447,30 @@ const BackgroundAudio = ({ url, isMuted, setAnalyser }: { url: string, isMuted: 
     }
 
     return () => {
-       if (audioRef.current) audioRef.current.pause();
        window.removeEventListener('click', unlock);
        window.removeEventListener('touchstart', unlock);
     };
-  }, [url, isMuted, setAnalyser]);
+  }, [currentUrl, isMuted, setAnalyser, playNext]);
 
   return null; 
 };
 
-const TelemetrySidebar = ({ isMuted, toggleMute, hasAudio, analyser }: { isMuted: boolean, toggleMute: () => void, hasAudio: boolean, analyser: AnalyserNode | null }) => {
+const TelemetrySidebar = ({ 
+  isMuted, 
+  toggleMute, 
+  isShuffle,
+  toggleShuffle,
+  hasAudio, 
+  nextItem 
+}: { 
+  isMuted: boolean, 
+  toggleMute: () => void, 
+  isShuffle: boolean,
+  toggleShuffle: () => void,
+  hasAudio: boolean, 
+  nextItem?: MediaItem 
+}) => {
   const [stats, setStats] = useState({ fps: 60, temp: 45, load: 12 });
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -394,28 +483,167 @@ const TelemetrySidebar = ({ isMuted, toggleMute, hasAudio, analyser }: { isMuted
     return () => clearInterval(interval);
   }, []);
 
-  // Visualizer Loop (Waveform)
+  return (
+    <div className="absolute right-4 top-4 bottom-4 w-32 z-40 flex flex-col justify-center gap-4 pointer-events-auto opacity-90 translate-z-20 transition-transform duration-500 md:translate-x-0 translate-x-full">
+      
+      <button 
+        onClick={toggleMute}
+        className={`border-l-2 pl-2 text-left transition-all duration-300 hover:bg-green-900/20 ${hasAudio && !isMuted ? 'border-green-500' : 'border-red-500/50 opacity-50'}`}
+      >
+        <div className={`text-[10px] mb-1 flex items-center gap-1 ${hasAudio && !isMuted ? 'text-green-500' : 'text-red-500'}`}>
+          {hasAudio && !isMuted ? <Volume2 size={10}/> : <VolumeX size={10}/>} AUDIO_LINK
+        </div>
+        <div className={`text-lg font-bold tracking-widest animate-text-glitch ${hasAudio && !isMuted ? 'text-green-50' : 'text-red-500'}`}>
+          {hasAudio && !isMuted ? 'ACTIVE' : 'MUTED'}
+        </div>
+      </button>
+
+      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300 hidden md:block">
+        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Wifi size={10}/> MATRIX_UPLINK</div>
+        <div className="text-lg text-green-50 font-bold tracking-widest">CONNECTED</div>
+      </div>
+      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300 hidden md:block">
+        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Activity size={10}/> FRAMERATE</div>
+        <div className="text-lg text-green-50 font-bold tracking-widest">{stats.fps}</div>
+      </div>
+      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300">
+        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Cpu size={10}/> CORE_TEMP</div>
+        <div className="text-lg text-green-50 font-bold tracking-widest">{stats.temp}°C</div>
+      </div>
+
+      {/* AUDIO CONTROL BUTTON */}
+      <button
+        onClick={toggleMute}
+        className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300 text-left group mt-2"
+      >
+        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch">
+            <Disc size={10} className={hasAudio && !isMuted ? "animate-spin" : ""}/> AUDIO_DECK
+        </div>
+        <div className={`text-lg font-bold tracking-widest transition-all ${hasAudio && !isMuted ? 'text-green-400' : 'text-white animate-pulse'}`}>
+            {hasAudio && !isMuted ? '■ STOP' : '▶ PLAY'}
+        </div>
+      </button>
+
+       {/* SHUFFLE CONTROL BUTTON */}
+      <button
+        onClick={toggleShuffle}
+        className={`border-l-2 pl-2 hover-depth transition-transform duration-300 text-left group mt-2 ${isShuffle ? 'border-green-500' : 'border-green-500/30'}`}
+      >
+        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch">
+            <Shuffle size={10} className={isShuffle ? "text-green-400" : "text-green-800"}/> PLAY_MODE
+        </div>
+        <div className={`text-sm font-bold tracking-widest transition-all ${isShuffle ? 'text-green-400' : 'text-green-800'}`}>
+            {isShuffle ? 'SHUFFLE' : 'SEQUENTIAL'}
+        </div>
+      </button>
+
+      {/* UP NEXT THUMBNAIL */}
+      <div className="mt-4 border-t border-green-900/50 pt-2 flex flex-col gap-1 hidden md:flex">
+        <div className="text-[8px] text-green-500 tracking-widest uppercase animate-pulse">UP NEXT</div>
+        <div className="w-24 h-16 bg-green-900/10 border border-green-500/30 overflow-hidden relative group">
+           {nextItem ? (
+             <>
+               {/* Preview Content */}
+               {(nextItem.type === 'image' || nextItem.type === 'gif') ? (
+                 <img src={nextItem.url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity grayscale hover:grayscale-0" alt="Next" />
+               ) : (
+                 <div className="w-full h-full flex items-center justify-center text-green-600 bg-green-900/20">
+                    {nextItem.type === 'video' ? <Film size={20} /> : <FileAudio size={20} />}
+                 </div>
+               )}
+               
+               {/* Type Badge */}
+               <div className="absolute bottom-0 right-0 bg-green-900/80 text-[8px] text-green-400 px-1 font-bold border-tl border-green-500/50">
+                 {nextItem.type.toUpperCase()}
+               </div>
+             </>
+           ) : (
+             <div className="w-full h-full flex items-center justify-center text-green-800/50 text-[8px]">
+               <Repeat size={16} />
+             </div>
+           )}
+        </div>
+      </div>
+      
+      <div className="mt-auto text-[8px] text-green-800 leading-tight overflow-hidden h-20 flex flex-col-reverse font-mono pointer-events-none hidden md:flex">
+        {Array.from({length: 12}).map((_, i) => (
+          <div key={i} className="opacity-60">
+            0x{Math.floor(Math.random()*16777215).toString(16).toUpperCase()} :: ACK
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const BookNowSidebar = () => (
+  <div className="absolute left-4 top-4 bottom-4 w-24 z-40 flex flex-col justify-center items-center pointer-events-none translate-z-20 hidden md:flex">
+    <div className="h-3/4 border-r-2 border-green-500/20 pr-4 flex flex-col items-center justify-center py-8 relative">
+      {/* Decorative lines */}
+      <div className="w-[1px] h-16 bg-gradient-to-b from-transparent via-green-500 to-transparent opacity-50"></div>
+      
+      <div className="flex-1 flex flex-col justify-center items-center gap-8">
+        
+        <div className="flex flex-col gap-0 animate-text-glitch">
+           {['B','O','O','K'].map((l, i) => (
+             <span key={`b-${i}`} className="text-5xl font-black font-display text-transparent bg-clip-text bg-gradient-to-r from-white to-green-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] leading-tight text-center transform hover:scale-110 transition-transform duration-300">{l}</span>
+           ))}
+           <div className="h-8"></div>
+           {['N','O','W'].map((l, i) => (
+             <span key={`n-${i}`} className="text-5xl font-black font-display text-transparent bg-clip-text bg-gradient-to-r from-white to-green-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] leading-tight text-center transform hover:scale-110 transition-transform duration-300">{l}</span>
+           ))}
+        </div>
+
+      </div>
+
+      <div className="w-[1px] h-16 bg-gradient-to-b from-transparent via-green-500 to-transparent opacity-50"></div>
+    </div>
+  </div>
+);
+
+const FullWidthVisualizer = ({ analyser }: { analyser: AnalyserNode | null }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   useEffect(() => {
     if (!canvasRef.current || !analyser) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let animId: number;
+
+    // Auto resize canvas to full width
+    const resize = () => {
+       if (canvas.parentElement) {
+          canvas.width = canvas.parentElement.offsetWidth;
+          canvas.height = canvas.parentElement.offsetHeight;
+       }
+    };
+    
+    // Throttle resize
+    const onResize = () => {
+        cancelAnimationFrame(animId);
+        resize();
+        draw();
+    };
+
+    resize();
+    window.addEventListener('resize', onResize);
+
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
-    let animId: number;
     const draw = () => {
       animId = requestAnimationFrame(draw);
       analyser.getByteTimeDomainData(dataArray);
 
-      // Use semi-transparent black for phosphor persistence effect instead of clearRect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      // Trail effect
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#00ff41';
-      ctx.shadowBlur = 5;
+      ctx.shadowBlur = 4;
       ctx.shadowColor = '#00ff41';
       ctx.beginPath();
 
@@ -437,54 +665,19 @@ const TelemetrySidebar = ({ isMuted, toggleMute, hasAudio, analyser }: { isMuted
 
       ctx.lineTo(canvas.width, canvas.height / 2);
       ctx.stroke();
-      // Reset shadow for next frame clear
       ctx.shadowBlur = 0;
     };
 
     draw();
-    return () => cancelAnimationFrame(animId);
+    return () => {
+        cancelAnimationFrame(animId);
+        window.removeEventListener('resize', onResize);
+    };
   }, [analyser]);
 
   return (
-    <div className="absolute right-4 top-4 bottom-4 w-32 z-40 flex flex-col justify-center gap-4 pointer-events-auto opacity-90 translate-z-20">
-      
-      <button 
-        onClick={toggleMute}
-        className={`border-l-2 pl-2 text-left transition-all duration-300 hover:bg-green-900/20 ${hasAudio && !isMuted ? 'border-green-500' : 'border-red-500/50 opacity-50'}`}
-      >
-        <div className={`text-[10px] mb-1 flex items-center gap-1 ${hasAudio && !isMuted ? 'text-green-500' : 'text-red-500'}`}>
-          {hasAudio && !isMuted ? <Volume2 size={10}/> : <VolumeX size={10}/>} AUDIO_LINK
-        </div>
-        <div className={`text-lg font-bold tracking-widest animate-text-glitch ${hasAudio && !isMuted ? 'text-green-50' : 'text-red-500'}`}>
-          {hasAudio && !isMuted ? 'ACTIVE' : 'MUTED'}
-        </div>
-      </button>
-
-      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300">
-        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Wifi size={10}/> MATRIX_UPLINK</div>
-        <div className="text-lg text-green-50 font-bold tracking-widest">CONNECTED</div>
-      </div>
-      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300">
-        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Activity size={10}/> FRAMERATE</div>
-        <div className="text-lg text-green-50 font-bold tracking-widest">{stats.fps}</div>
-      </div>
-      <div className="border-l-2 border-green-500/40 pl-2 hover-depth transition-transform duration-300">
-        <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch"><Cpu size={10}/> CORE_TEMP</div>
-        <div className="text-lg text-green-50 font-bold tracking-widest">{stats.temp}°C</div>
-      </div>
-
-      {/* Visualizer Canvas */}
-      <div className="h-24 border-l-2 border-green-500/20 pl-2 flex items-end opacity-80">
-         <canvas ref={canvasRef} width={120} height={96} className="w-full h-full" />
-      </div>
-      
-      <div className="mt-auto text-[8px] text-green-800 leading-tight overflow-hidden h-32 flex flex-col-reverse font-mono pointer-events-none">
-        {Array.from({length: 12}).map((_, i) => (
-          <div key={i} className="opacity-60">
-            0x{Math.floor(Math.random()*16777215).toString(16).toUpperCase()} :: ACK
-          </div>
-        ))}
-      </div>
+    <div className="w-full h-16 bg-black/50 border-t border-b border-green-900/30 relative z-30 shrink-0">
+       <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );
 };
@@ -493,7 +686,7 @@ const Marquee = ({ text, logoUrl }: { text: string, logoUrl: string }) => (
   <div className="relative w-full z-40 h-16 bg-black/95 border-b border-green-900/60 flex items-center backdrop-blur-sm shrink-0 translate-z-10">
     <div className="w-24 h-full flex items-center justify-center border-r border-green-900/60 px-2 bg-green-950/20">
       {logoUrl ? (
-        <img src={logoUrl} alt="Logo" className="max-h-10 object-contain drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+        <img src={logoUrl} alt="Logo" className="max-h-10 object-contain drop-shadow-[0_0_8px_rgba(34,197,94,0.5)] animate-pulse hover:drop-shadow-[0_0_20px_rgba(34,197,94,0.8)] transition-all duration-500" />
       ) : (
         <div className="text-green-500 text-[10px] font-bold text-center border border-green-500/30 p-1">NO SIGNAL</div>
       )}
@@ -518,15 +711,24 @@ const MatrixRain = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Resize handler
+    let animId: number;
+
     const resize = () => {
         if (canvas.parentElement) {
             canvas.width = canvas.parentElement.offsetWidth;
             canvas.height = canvas.parentElement.offsetHeight;
         }
     };
+    
+    // Throttle
+    const onResize = () => {
+        cancelAnimationFrame(animId);
+        resize();
+        draw(0);
+    };
+
     resize();
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', onResize);
 
     const columns = Math.floor(canvas.width / 10);
     const drops: number[] = new Array(columns).fill(1);
@@ -535,7 +737,7 @@ const MatrixRain = () => {
     const draw = (time: number) => {
         // Throttling for style
         if (time - lastTime < 33) { // ~30fps
-             requestAnimationFrame(draw);
+             animId = requestAnimationFrame(draw);
              return;
         }
         lastTime = time;
@@ -559,12 +761,12 @@ const MatrixRain = () => {
             }
             drops[i]++;
         }
-        requestAnimationFrame(draw);
+        animId = requestAnimationFrame(draw);
     };
-    const animId = requestAnimationFrame(draw);
+    animId = requestAnimationFrame(draw);
     return () => {
         cancelAnimationFrame(animId);
-        window.removeEventListener('resize', resize);
+        window.removeEventListener('resize', onResize);
     }
   }, []);
 
@@ -625,10 +827,12 @@ const Countdown = () => {
 
         {/* RIGHT: LOCATION */}
         <div className="flex items-center gap-4 text-right hidden md:flex">
-           <Bot size={32} className="text-green-500 animate-bounce" />
+           {/* ROBOT HEAD: Size tripled from 32 to 96 */}
+           <Bot size={96} className="text-green-500 animate-bounce" />
            <div>
               <div className="text-2xl font-mono font-bold text-green-50 tracking-widest">LAS VEGAS</div>
               <div className="text-green-600 text-xs font-mono tracking-[0.3em]">NV // 36.1716° N</div>
+              <div className="text-green-400 text-[10px] font-mono tracking-[0.5em] mt-1 border-t border-green-900/50 pt-1 drop-shadow-[0_0_5px_rgba(74,222,128,0.8)] animate-pulse">COUNTDOWN</div>
            </div>
         </div>
 
@@ -637,13 +841,12 @@ const Countdown = () => {
   );
 };
 
-const MediaPlayer = ({ media }: { media: MediaItem[] }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], currentIndex: number, onNext: () => void }) => {
   const [isFlickering, setIsFlickering] = useState(false);
   const [hasError, setHasError] = useState(false); 
   const [debugInfo, setDebugInfo] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const currentItem = useMemo(() => media[currentIndex], [media, currentIndex]);
 
@@ -652,12 +855,12 @@ const MediaPlayer = ({ media }: { media: MediaItem[] }) => {
     
     setIsFlickering(true);
     setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % media.length);
+      onNext();
       setHasError(false);
       setDebugInfo('');
       setTimeout(() => setIsFlickering(false), 100); 
     }, 200);
-  }, [media.length]);
+  }, [onNext]);
 
   const handleResourceError = useCallback((e: React.SyntheticEvent<HTMLVideoElement | HTMLImageElement | HTMLAudioElement>, url: string) => {
     // Don't trigger double errors
@@ -686,6 +889,17 @@ const MediaPlayer = ({ media }: { media: MediaItem[] }) => {
     setTimeout(() => setIsFlickering(false), 50);
   }, []);
 
+  // Clean up video elements on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.removeAttribute('src');
+            videoRef.current.load();
+        }
+    };
+  }, [currentItem]);
+
   // Auto-progression logic
   useEffect(() => {
     if (!currentItem) return;
@@ -700,12 +914,23 @@ const MediaPlayer = ({ media }: { media: MediaItem[] }) => {
     if ((currentItem.type === 'video' || currentItem.type === 'audio') && !hasError) {
          const el = videoRef.current;
          if (el) {
-             el.load();
-             const playPromise = el.play();
-             if (playPromise !== undefined) {
-                 playPromise.catch(error => {
-                     console.log("Auto-play prevented:", error);
-                 });
+             // Video: Force mute via prop AND logic to ensuring autoplay works on strict browsers
+             if (currentItem.type === 'video') {
+                 el.muted = true;
+             }
+
+             if (el.paused) {
+                const playPromise = el.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Auto-play prevented:", error);
+                        // Try one more time with forceful mute if it was a policy error
+                        if (currentItem.type === 'video' && error.name === 'NotAllowedError') {
+                            el.muted = true;
+                            el.play().catch(e => console.error("Double fail", e));
+                        }
+                    });
+                }
              }
          }
     }
@@ -714,12 +939,6 @@ const MediaPlayer = ({ media }: { media: MediaItem[] }) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [currentItem, triggerNext, hasError]);
-
-  // Single item loop fix
-  useEffect(() => {
-      if (media.length === 0) return;
-      if (currentIndex >= media.length) setCurrentIndex(0);
-  }, [media.length, currentIndex]);
 
   if (!media.length) return (
     <div className="w-full h-full flex items-center justify-center bg-black text-green-600/50 font-mono">
@@ -766,12 +985,20 @@ const MediaPlayer = ({ media }: { media: MediaItem[] }) => {
         <>
            {currentItem.type === 'video' && (
              <video
-               ref={videoRef}
+               ref={(el) => {
+                 // Callback ref to strictly enforce properties before mount completes
+                 if (el) {
+                   el.muted = true;
+                   videoRef.current = el;
+                 }
+               }}
                key={currentItem.id}
                src={currentItem.url}
                loop={media.length === 1}
                playsInline
-               muted // Video muted to ensure playback if audio policy fails, use bg audio
+               autoPlay
+               muted={true} // Explicit JSX prop
+               preload="auto"
                className="w-full h-full object-contain"
                onEnded={media.length > 1 ? triggerNext : undefined}
                onError={(e) => handleResourceError(e, currentItem.url)}
@@ -904,16 +1131,35 @@ const AdminDashboard = ({ media, settings, user, onExit, actions }: {
                   placeholder="https://..."
                 />
               </div>
+              
+              {/* Audio Section - Expanded */}
               <div className="group md:col-span-2">
-                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">BACKGROUND_AUDIO_URI (MP3)</label>
+                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">BACKGROUND_AUDIO_URI_1 (MP3)</label>
                 <input 
                   type="text" 
                   value={localSettings.audioUrl || ''}
                   onChange={e => setLocalSettings(s => ({...s, audioUrl: e.target.value}))}
+                  className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all mb-2"
+                  placeholder="https://..."
+                />
+                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">BACKGROUND_AUDIO_URI_2 (OPTIONAL)</label>
+                <input 
+                  type="text" 
+                  value={localSettings.audioUrl2 || ''}
+                  onChange={e => setLocalSettings(s => ({...s, audioUrl2: e.target.value}))}
+                  className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all mb-2"
+                  placeholder="https://..."
+                />
+                <label className="block text-[10px] text-green-700 mb-1 group-hover:text-green-400 transition-colors">BACKGROUND_AUDIO_URI_3 (OPTIONAL)</label>
+                <input 
+                  type="text" 
+                  value={localSettings.audioUrl3 || ''}
+                  onChange={e => setLocalSettings(s => ({...s, audioUrl3: e.target.value}))}
                   className="w-full bg-black border border-green-800 p-3 text-sm focus:border-green-500 focus:outline-none focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all"
                   placeholder="https://..."
                 />
               </div>
+
             </div>
             <div className="flex justify-end mt-4 gap-4">
                <button 
@@ -953,6 +1199,7 @@ const AdminDashboard = ({ media, settings, user, onExit, actions }: {
                 className="bg-green-950/30 text-green-400 border-r border-green-800 px-4 py-3 text-sm focus:outline-none appearance-none"
               >
                 <option value="image">TYPE: IMG (JPG/PNG)</option>
+                <option value="video">TYPE: MP4 (VIDEO)</option>
                 <option value="gif">TYPE: GIF (LOOP)</option>
                 <option value="audio">TYPE: AUDIO (WAV/MP3)</option>
               </select>
@@ -1102,8 +1349,28 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'public' | 'admin'>('public');
   // Audio starts unmuted by default, relying on the Intro "Click" to unlock audio context
   const [isMuted, setIsMuted] = useState(false);
+  const [isShuffle, setIsShuffle] = useState(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [showIntro, setShowIntro] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Construct audio playlist
+  const audioUrls = useMemo(() => {
+    return [settings.audioUrl, settings.audioUrl2, settings.audioUrl3].filter(Boolean) as string[];
+  }, [settings]);
+
+  const handleNext = useCallback(() => {
+    if (media.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % media.length);
+    }
+  }, [media.length]);
+
+  // Single item loop fix / bounds check
+  useEffect(() => {
+      if (media.length > 0 && currentIndex >= media.length) {
+          setCurrentIndex(0);
+      }
+  }, [media.length, currentIndex]);
 
   // Bypass intro if explicitly requested (e.g. refresh in admin mode)
   useEffect(() => {
@@ -1140,25 +1407,40 @@ export default function App() {
       )}
 
       {viewMode === 'public' ? (
-        <HoloFrame>
+        <HoloFrame onInteract={() => setIsMuted(false)}>
           <div className="flex flex-col h-full relative z-40">
             <Marquee text={settings.marqueeText} logoUrl={settings.logoUrl} />
             
-            <div className="flex-1 relative overflow-hidden">
-               <TelemetrySidebar 
-                 isMuted={isMuted} 
-                 toggleMute={() => setIsMuted(!isMuted)} 
-                 hasAudio={!!settings.audioUrl}
-                 analyser={analyser}
-               />
-               <MediaPlayer media={media} />
-               <BackgroundAudio 
-                 url={settings.audioUrl} 
-                 isMuted={isMuted} 
-                 setAnalyser={setAnalyser}
-                />
+            <div className="flex-1 relative overflow-hidden flex flex-col">
+               <div className="flex-1 relative">
+                  <BookNowSidebar />
+                  <TelemetrySidebar 
+                    isMuted={isMuted} 
+                    toggleMute={() => setIsMuted(!isMuted)}
+                    isShuffle={isShuffle}
+                    toggleShuffle={() => setIsShuffle(!isShuffle)}
+                    hasAudio={audioUrls.length > 0}
+                    nextItem={media.length > 1 ? media[(currentIndex + 1) % media.length] : undefined}
+                  />
+                  
+                  {/* Confined Media Player */}
+                  <div className="absolute inset-0 z-0 left-0 right-0 top-12 bottom-24 md:left-32 md:right-40 md:top-4 md:bottom-4 border border-green-900/30 bg-black/50 overflow-hidden rounded-sm shadow-[inset_0_0_20px_rgba(0,255,65,0.1)]">
+                    <MediaPlayer 
+                        media={media} 
+                        currentIndex={currentIndex}
+                        onNext={handleNext}
+                    />
+                  </div>
+                  
+                  <BackgroundAudio 
+                    urls={audioUrls} 
+                    isMuted={isMuted} 
+                    isShuffle={isShuffle}
+                    setAnalyser={setAnalyser}
+                  />
+               </div>
+               <FullWidthVisualizer analyser={analyser} />
             </div>
-
             <Countdown />
           </div>
         </HoloFrame>

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>CES 2026 Holo-Deck</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700;800&family=Rajdhani:wght@300;500;700;900&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
             animation: {
               'scanlines': 'scanlines 4s linear infinite',
               'marquee': 'marquee 30s linear infinite',
-              'glitch-1': 'glitch-1 2s infinite linear alternate-reverse',
+              'glitch-1': 'glitch-1 2.5s infinite linear alternate-reverse',
               'glitch-2': 'glitch-2 3s infinite linear alternate-reverse',
               'pulse-fast': 'pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               'holo-pulse': 'holo-pulse 5s ease-in-out infinite',
@@ -43,20 +43,30 @@
                 '100%': { transform: 'translateX(-50%)' },
               },
               'glitch-1': {
-                '0%': { clipPath: 'inset(20% 0 80% 0)', transform: 'translate(-2px, 2px)' },
-                '20%': { clipPath: 'inset(60% 0 10% 0)', transform: 'translate(2px, -1px)' },
-                '40%': { clipPath: 'inset(40% 0 50% 0)', transform: 'translate(-2px, 2px)' },
-                '60%': { clipPath: 'inset(80% 0 5% 0)', transform: 'translate(2px, -2px)' },
-                '80%': { clipPath: 'inset(10% 0 70% 0)', transform: 'translate(-1px, 1px)' },
-                '100%': { clipPath: 'inset(30% 0 20% 0)', transform: 'translate(2px, -2px)' },
+                '0%, 100%': { clipPath: 'inset(50% 0 50% 0)', transform: 'translate(0)' },
+                '5%': { clipPath: 'inset(10% 0 85% 0)', transform: 'translate(-2px, 1px)' },
+                '15%': { clipPath: 'inset(85% 0 10% 0)', transform: 'translate(2px, -1px)' },
+                '25%': { clipPath: 'inset(45% 0 45% 0)', transform: 'translate(-2px, 2px)' },
+                '30%': { clipPath: 'inset(10% 0 50% 0)', transform: 'translate(1px, -2px)' },
+                '45%': { clipPath: 'inset(60% 0 30% 0)', transform: 'translate(-1px, 1px)' },
+                '55%': { clipPath: 'inset(20% 0 70% 0)', transform: 'translate(1px, -1px)' },
+                '65%': { clipPath: 'inset(5% 0 90% 0)', transform: 'translate(-2px, 2px)' },
+                '75%': { clipPath: 'inset(35% 0 45% 0)', transform: 'translate(2px, -1px)' },
+                '85%': { clipPath: 'inset(75% 0 15% 0)', transform: 'translate(-1px, 1px)' },
+                '95%': { clipPath: 'inset(50% 0 40% 0)', transform: 'translate(1px, 2px)' },
               },
               'glitch-2': {
-                '0%': { clipPath: 'inset(10% 0 60% 0)', transform: 'translate(2px, -2px)' },
-                '20%': { clipPath: 'inset(30% 0 20% 0)', transform: 'translate(-2px, 1px)' },
-                '40%': { clipPath: 'inset(70% 0 10% 0)', transform: 'translate(2px, -2px)' },
-                '60%': { clipPath: 'inset(20% 0 50% 0)', transform: 'translate(-2px, 2px)' },
-                '80%': { clipPath: 'inset(50% 0 30% 0)', transform: 'translate(1px, -1px)' },
-                '100%': { clipPath: 'inset(0% 0 80% 0)', transform: 'translate(-2px, 2px)' },
+                '0%, 100%': { clipPath: 'inset(50% 0 50% 0)', transform: 'translate(0)' },
+                '5%': { clipPath: 'inset(15% 0 60% 0)', transform: 'translate(2px, -1px)' },
+                '10%': { clipPath: 'inset(70% 0 5% 0)', transform: 'translate(-2px, 2px)' },
+                '20%': { clipPath: 'inset(25% 0 55% 0)', transform: 'translate(1px, 1px)' },
+                '35%': { clipPath: 'inset(65% 0 20% 0)', transform: 'translate(-1px, -2px)' },
+                '45%': { clipPath: 'inset(5% 0 85% 0)', transform: 'translate(2px, 2px)' },
+                '50%': { clipPath: 'inset(50% 0 10% 0)', transform: 'translate(-2px, -1px)' },
+                '60%': { clipPath: 'inset(80% 0 5% 0)', transform: 'translate(1px, 2px)' },
+                '70%': { clipPath: 'inset(10% 0 80% 0)', transform: 'translate(-1px, -2px)' },
+                '80%': { clipPath: 'inset(40% 0 40% 0)', transform: 'translate(2px, 1px)' },
+                '90%': { clipPath: 'inset(30% 0 60% 0)', transform: 'translate(-2px, -1px)' },
               },
               'holo-pulse': {
                 '0%, 100%': { 
@@ -70,11 +80,11 @@
               },
               'text-glitch': {
                 '0%': { opacity: '1', textShadow: '0 0 0 transparent' },
-                '92%': { opacity: '1', textShadow: '0 0 0 transparent' },
-                '93%': { opacity: '0.8', textShadow: '2px 0 #00ff41, -2px 0 #ff003c' },
-                '94%': { opacity: '1', textShadow: '0 0 0 transparent' },
-                '96%': { opacity: '0.5', transform: 'translateX(2px)' },
-                '98%': { opacity: '1', transform: 'translateX(0)' },
+                '92%': { opacity: '1', textShadow: '0 0 0 transparent', transform: 'translate(0)' },
+                '93%': { opacity: '0.8', textShadow: '2px 0 #00ffff, -2px 0 #ff00ff', transform: 'translate(1px, 1px)' },
+                '94%': { opacity: '1', textShadow: '0 0 0 transparent', transform: 'translate(0)' },
+                '96%': { opacity: '0.8', textShadow: '-2px 0 #00ff41, 2px 0 #ff003c', transform: 'translate(-1px, -1px)' },
+                '98%': { opacity: '1', textShadow: '0 0 0 transparent' },
                 '100%': { opacity: '1', textShadow: '0 0 0 transparent' },
               }
             }
@@ -87,6 +97,7 @@
         background-color: #000;
         color: #00ff41;
         overflow: hidden;
+        touch-action: none; /* Prevent mobile scroll/zoom */
       }
       /* Custom Scrollbar for Terminal */
       ::-webkit-scrollbar {
