@@ -1070,14 +1070,25 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
     onNext();
   }, [onNext]);
 
-  // Reset advance flag when item changes
+  // Reset advance flag and schedule autoplay timer when item changes
   useEffect(() => {
+    if (!item) return;
+    
+    // ALWAYS reset the advance flag for the new item
     hasAdvancedRef.current = false;
     
-    // Clear any existing timer
+    // Clear any existing timer from previous item
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
+    }
+    
+    // For images/GIFs, schedule timer immediately (don't wait for onLoad - might be cached)
+    if (item.type === 'image' || item.type === 'gif') {
+      const duration = (item.duration || 5) * 1000;
+      timerRef.current = setTimeout(() => {
+        safeAdvance();
+      }, duration);
     }
 
     // Cleanup on unmount or item change
@@ -1087,29 +1098,19 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
         timerRef.current = null;
       }
     };
-  }, [item?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.id, item?.type, item?.duration]);
 
-  // Start timer when image/gif loads
+  // Image onLoad handler - not used for timing anymore (see useEffect above)
+  // Kept for potential future use (fade-in animations, etc.)
   const handleImageLoad = useCallback(() => {
-    if (!item || hasAdvancedRef.current) return;
-    
-    if (item.type === 'image' || item.type === 'gif') {
-      // Clear any existing timer first
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      
-      const duration = (item.duration || 5) * 1000;
-      timerRef.current = setTimeout(() => {
-        safeAdvance();
-      }, duration);
-    }
-  }, [item, safeAdvance]);
+    // Timer is now scheduled in useEffect, not here
+    // This prevents issues with cached images not firing onLoad
+  }, []);
 
   // Ensure video is muted and try to play when ready
   const handleVideoCanPlay = useCallback(() => {
-    if (!item || item.type !== 'video' || !videoRef.current || hasAdvancedRef.current) return;
+    if (!item || item.type !== 'video' || !videoRef.current) return;
     
     const video = videoRef.current;
     
@@ -1126,13 +1127,16 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
       });
     }
     
-    // Set a fallback safety timer ONLY as last resort if onEnded never fires
-    // This should rarely trigger - it's just insurance against hanging
-    if (!timerRef.current && video.duration && !isNaN(video.duration) && isFinite(video.duration)) {
+    // ALWAYS set a fallback safety timer - don't check hasAdvancedRef here
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    if (video.duration && !isNaN(video.duration) && isFinite(video.duration)) {
       // Add significant buffer (3 seconds) to ensure onEnded fires first
       const fallbackDuration = (video.duration * 1000) + 3000;
       timerRef.current = setTimeout(() => {
-        console.warn("Video fallback timer triggered - onEnded did not fire");
         safeAdvance();
       }, fallbackDuration);
     }
@@ -1202,7 +1206,6 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
             loop={false}
             preload="auto"
             onEnded={() => {
-              console.log("Video ended naturally");
               safeAdvance();
             }}
             onCanPlay={handleVideoCanPlay}
