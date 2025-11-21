@@ -81,6 +81,8 @@ npm run preview
   - ✅ Added fallback timers to ensure carousel never stalls indefinitely
   - ✅ Videos now explicitly muted (both muted attribute and volume=0)
   - ✅ Robust error handling for failed media loads
+  - ✅ Simplified video playback logic - uses natural autoPlay + onEnded flow
+  - ✅ Added user interaction unlock for browsers that block autoplay
   - ✅ Production-ready for 24/7 operation with continuous rotation
 
 - **2025-11-21**: Production deployment system and environment-aware configuration
