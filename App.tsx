@@ -608,7 +608,7 @@ const TelemetrySidebar = ({
       {/* AUDIO CONTROL BUTTON */}
       <button
         onClick={toggleMute}
-        className="border-l-2 border-green-500/40 pl-2 hover-depth transition-all duration-300 text-left group mt-2 hover:bg-green-900/20 hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] p-1 rounded-r-sm relative"
+        className={`border-l-2 border-green-500/40 pl-2 hover-depth transition-all duration-300 text-left group mt-2 hover:bg-green-900/20 hover:border-green-400 p-1 rounded-r-sm relative ${hasAudio && !isMuted ? 'hover:shadow-[0_0_10px_rgba(34,197,94,0.2)]' : 'animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.4)]'}`}
       >
         <div className="text-[10px] text-green-500 mb-1 flex items-center gap-1 animate-text-glitch">
             <Disc size={10} className={hasAudio && !isMuted ? "animate-spin" : ""}/> AUDIO_DECK
@@ -617,9 +617,12 @@ const TelemetrySidebar = ({
             {hasAudio && !isMuted ? '■ STOP' : '▶ PLAY'}
         </div>
         
-        {/* Hover Hint Tooltip */}
-        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-green-500 text-black px-3 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-[0_0_20px_rgba(34,197,94,0.6)] z-50">
-          <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-500"></div>
+        {/* Responsive Hover Hint Tooltip - LEFT on desktop, ABOVE on mobile */}
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 md:bottom-auto md:right-full md:left-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 md:mr-2 bg-green-500 text-black px-3 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-[0_0_20px_rgba(34,197,94,0.6)] z-50">
+          {/* Arrow pointing DOWN on mobile */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-green-500 md:hidden"></div>
+          {/* Arrow pointing RIGHT on desktop */}
+          <div className="hidden md:block absolute left-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-l-4 border-l-green-500"></div>
           {hasAudio && !isMuted ? 'STOP AUDIO LOOP' : 'PRESS PLAY'}
         </div>
       </button>
