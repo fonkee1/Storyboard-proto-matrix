@@ -924,11 +924,38 @@ const MediaPlayer = ({ media, currentIndex, onNext }: { media: MediaItem[], curr
   const item = media[currentIndex];
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const touchStartX = useRef(0);
 
   // Reset load state when index changes
   useEffect(() => {
       setIsLoaded(false);
   }, [item]);
+
+  // Keyboard and swipe navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') onNext();
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const diff = touchStartX.current - e.changedTouches[0].clientX;
+      if (diff > 50) onNext(); // Swipe left = next
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [onNext]);
 
   useEffect(() => {
     if (!item) return;
