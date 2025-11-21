@@ -886,9 +886,24 @@ const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const autoCloseTimer = setTimeout(() => onComplete(), 5000);
+    return () => clearTimeout(autoCloseTimer);
+  }, [onComplete]);
+
   return (
-    <div className="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center text-green-500 font-mono cursor-pointer" onClick={onComplete}>
-      <div className="max-w-lg w-full p-8 border border-green-900/50 bg-green-900/10 backdrop-blur relative overflow-hidden group">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center text-green-500 font-mono cursor-pointer animate-fade-in" onClick={onComplete}>
+      <div className="max-w-lg w-full mx-4 p-8 border-2 border-green-500/50 bg-zinc-900/90 backdrop-blur relative overflow-hidden group shadow-[0_0_50px_rgba(34,197,94,0.3)] animate-scale-in">
+        <button 
+          onClick={onComplete}
+          className="absolute top-2 right-2 text-green-500 hover:text-green-300 transition-colors z-20"
+          aria-label="Close"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        
         <div className="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-scanlines"></div>
         
         <div className="text-center space-y-6 relative z-10">
@@ -904,18 +919,18 @@ const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
 
            <div className={`transition-opacity duration-1000 ${step >= 1 ? 'opacity-100' : 'opacity-0'}`}>
               <button 
+                onClick={onComplete}
                 className="px-8 py-3 bg-green-500 text-black font-bold tracking-widest hover:bg-green-400 transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] uppercase"
               >
                 Initialize System
               </button>
            </div>
            
-           <div className="mt-8 text-[10px] text-green-800 animate-pulse">
-             SECURE CONNECTION REQUIRED // CLICK TO ENTER
+           <div className="mt-8 text-[10px] text-green-600 animate-pulse">
+             AUTO-DISMISS IN 5 SECONDS // CLICK ANYWHERE TO CLOSE
            </div>
         </div>
       </div>
-      <MatrixRain />
     </div>
   );
 };
@@ -1271,7 +1286,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [skinColor, setSkinColor] = useState<'green' | 'pink'>(() => {
     const saved = localStorage.getItem('ces-2026-skin');
@@ -1326,12 +1341,11 @@ export default function App() {
     );
   }
 
-  if (showIntro) {
-      return <IntroSequence onComplete={() => setShowIntro(false)} />;
-  }
-
   return (
     <div className="w-screen h-screen overflow-hidden relative font-sans selection:bg-green-500 selection:text-black bg-black">
+      
+      {/* Intro Popup Overlay */}
+      {showIntro && <IntroSequence onComplete={() => setShowIntro(false)} />}
       
       {/* Admin Toggle Button (Hidden in public view unless hovered top right) */}
       {viewMode === 'public' && (
