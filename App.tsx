@@ -846,8 +846,8 @@ const Countdown = () => {
            </div>
         </div>
 
-        {/* CENTER: TIMER */}
-        <div className="flex gap-8 md:gap-16 items-end">
+        {/* CENTER: TIMER + ROBOT HEAD + LOCATION */}
+        <div className="flex gap-6 md:gap-12 items-end">
             {['DAYS', 'HRS', 'MIN', 'SEC'].map((label, i) => {
             const val = Object.values(timeLeft)[i];
             return (
@@ -859,19 +859,18 @@ const Countdown = () => {
                 </div>
             );
             })}
-        </div>
-
-        {/* RIGHT: LOCATION */}
-        <div className="flex items-center gap-12 text-right hidden md:flex">
-           {/* ROBOT HEAD: Size tripled from 32 to 96. Bouncing AND spinning horizontally. */}
-           <div className="animate-bounce">
+            
+            {/* ROBOT HEAD: Centered between SECONDS and LOCATION */}
+            <div className="animate-bounce flex flex-col items-center">
               <Bot size={96} className="text-green-500 animate-spin-y" />
-           </div>
-           <div>
+            </div>
+            
+            {/* LOCATION INFO */}
+            <div className="flex flex-col items-center text-center hidden md:flex">
               <div className="text-2xl font-mono font-bold text-green-50 tracking-widest">LAS VEGAS</div>
               <div className="text-green-600 text-xs font-mono tracking-[0.3em]">NV // 36.1716° N</div>
               <div className="text-green-400 text-[10px] font-mono tracking-[0.5em] mt-1 border-t border-green-900/50 pt-1 drop-shadow-[0_0_5px_rgba(74,222,128,0.8)] animate-pulse">COUNTDOWN</div>
-           </div>
+            </div>
         </div>
 
       </div>
