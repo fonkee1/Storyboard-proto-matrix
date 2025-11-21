@@ -75,6 +75,14 @@ npm run preview
 - **URL Management**: Edit `production-config.json` to update production media/settings, then redeploy
 
 ## Recent Changes
+- **2025-11-21**: Media carousel reliability fixes and video muting
+  - ✅ Fixed carousel hanging between media transitions (images, GIFs, videos)
+  - ✅ Implemented safeAdvance guard to prevent double-advance race conditions
+  - ✅ Added fallback timers to ensure carousel never stalls indefinitely
+  - ✅ Videos now explicitly muted (both muted attribute and volume=0)
+  - ✅ Robust error handling for failed media loads
+  - ✅ Production-ready for 24/7 operation with continuous rotation
+
 - **2025-11-21**: Production deployment system and environment-aware configuration
   - ✅ Created production-config.json with locked-in media URLs and settings
   - ✅ Implemented dual-mode system (dev=localStorage, prod=config file)
